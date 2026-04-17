@@ -43,7 +43,6 @@
   <header class="navbar" role="banner">
     <div class="nav-inner">
       <a href="#acasa" class="nav-brand" aria-label="eCarnet — Carnetul tău digital">
-        <img src="assets/icon.png" alt="" aria-hidden="true" width="28" height="28" />
         <span>eCarnet</span>
       </a>
 
@@ -106,8 +105,8 @@
             <div class="hero-ring-dashed"></div>
             <!-- Electric arc ring -->
             <div class="hero-ring-arc"></div>
-            <!-- App icon -->
-            <div class="hero-app-icon glow-icon">
+<!-- App icon (draggable) -->
+            <div class="hero-app-icon glow-icon" id="hero-app-icon-click">
               <img src="assets/icon.png" alt="eCarnet app icon" width="180" height="180" />
             </div>
           </div>
@@ -125,8 +124,7 @@
       <div class="concept-inner">
 
         <div class="concept-copy">
-          <p class="section-eyebrow reveal">Soluția</p>
-          <h2 id="despre-heading" class="section-title reveal reveal-delay-1">
+          <h2 id="despre-heading" class="section-title reveal">
             Ce este <em class="brand-highlight">eCarnet?</em>
           </h2>
 
@@ -146,7 +144,7 @@
                   <path d="M111.89,149.67c.48.97.64,2.01.64,3.05,0,2.17-.81,4.18-2.33,5.71-1.53,1.52-3.54,2.33-5.71,2.33-1.04,0-2.09-.24-3.05-.64-.97-.4-1.85-.97-2.65-1.69-1.53-1.53-2.33-3.54-2.33-5.71,0-1.04.16-2.09.64-3.05.4-1.04.97-1.85,1.69-2.65,2.98-2.98,8.44-2.98,11.41,0,.72.8,1.29,1.69,1.69,2.65ZM208.99,104.5c0,57.62-46.88,104.5-104.5,104.5S0,162.12,0,104.5,46.88,0,104.5,0s104.5,46.88,104.5,104.5ZM192.92,104.5c0-48.76-39.67-88.42-88.42-88.42S16.08,55.74,16.08,104.5s39.67,88.42,88.42,88.42,88.42-39.67,88.42-88.42ZM110.26,48.74c-9.54-1.67-19.14.89-26.43,7.01-7.3,6.13-11.48,15.11-11.48,24.63,0,4.44,3.6,8.04,8.04,8.04s8.04-3.6,8.04-8.04c0-4.76,2.1-9.25,5.75-12.32,3.71-3.12,8.42-4.34,13.31-3.49,6.32,1.11,11.72,6.51,12.83,12.83,1.34,7.6-2.64,14.93-9.67,17.84-8.61,3.56-14.18,12.18-14.18,21.95v11.41c0,4.44,3.6,8.04,8.04,8.04s8.04-3.6,8.04-8.04v-11.41c0-3.19,1.7-6.04,4.24-7.09,14.06-5.81,22.02-20.41,19.37-35.49-2.28-12.96-12.92-23.61-25.89-25.88Z"/>
                 </svg>
               </span>
-              <span>Se pierde, se uită, trebuie reînoit când expiră.</span>
+              <span>Se pierde și se uită mereu, iar când expiră, trebuie reînoit.</span>
             </div>
 
             <div class="problem-pill reveal reveal-delay-4" role="listitem">
@@ -155,7 +153,7 @@
                   <path d="M20.026,11.827c0.065-0.739,0.513-1.387,1.206-1.673c0.402-0.166,0.651-0.574,0.615-1.007C21.805,8.64,21.741,8.133,21.659,7.641C21.438,6.175,20.252,4.781,18.706,4.469C14.267,3.58,9.735,3.58,5.293,4.469C3.749,4.781,2.563,5.882,2.344,7.333C2.259,7.84,2.196,8.347,2.153,8.854c-0.036,0.434,0.212,0.841,0.615,1.007C3.517,10.463,4,11.188,4,12s-0.483,1.537-1.232,1.846c-0.402,0.166-0.651,0.574-0.615,1.007c0.042,0.507,0.106,1.014,0.188,1.506c0.221,1.466,1.407,2.66,2.953,2.971c2.158,0.432,4.349,0.652,6.514,0.665C12.848,21.788,14.783,23,17,23c3.309,0,6-2.691,6-6C23,14.796,21.802,12.87,20.026,11.827z M13.567,19.019c-0.088-0.149-0.179-0.295-0.248-0.456c-0.078-0.187-0.131-0.379-0.18-0.572c-0.016-0.062-0.044-0.119-0.057-0.183C13.028,17.543,13,17.272,13,17c0-2.206,1.794-4,4-4c0.278,0,0.548,0.029,0.81,0.083c0.128,0.026,0.246,0.076,0.369,0.115c0.135,0.042,0.273,0.075,0.403,0.132c0.153,0.066,0.294,0.153,0.437,0.237L13.567,19.019z M17,21c-0.74,0-1.424-0.215-2.019-0.567l5.452-5.452C20.785,15.576,21,16.26,21,17C21,19.206,19.206,21,17,21z"/>
                 </svg>
               </span>
-              <span>Pierzi timp și bani la secretariat, în fiecare an.</span>
+              <span>Pierzi timp și bani la secretariat, în fiecare an. Pe eCarnet, totul e gratis și rapid.</span>
             </div>
 
             <div class="problem-pill reveal reveal-delay-5" role="listitem">
@@ -165,13 +163,13 @@
                   <path d="M32 16h12a2 2 0 0 0 0-4H32a2 2 0 0 0 0 4zM44 22H20a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zM44 32H20a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zM44 42H20a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zM44 52H20a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4z"/>
                 </svg>
               </span>
-              <span>Hârtii, ștampile, semnături și bani. Toate fără rost.</span>
+              <span>Hârtii, ștampile, semnături - toate fără rost. eCarnet scapă de ele.</span>
             </div>
 
           </div>
         </div>
 
-        <div class="concept-visual reveal-scale" aria-hidden="true">
+        <div class="concept-visual reveal-scale" aria-hidden="true" id="concept-mockup">
           <img src="assets/mockup.png" alt="eCarnet app mockup" width="280" height="560" loading="lazy" />
         </div>
 
@@ -185,8 +183,7 @@
     <section id="functii" class="features" aria-labelledby="features-heading">
 
       <div class="features-inner">
-        <p class="section-eyebrow reveal">Funcționalități</p>
-        <h2 id="features-heading" class="section-title reveal reveal-delay-1">
+        <h2 id="features-heading" class="section-title reveal">
           Ce poate face <em class="brand-highlight">eCarnet?</em>
         </h2>
 
@@ -259,8 +256,7 @@
       <div class="container">
 
         <div>
-          <p class="section-eyebrow section-eyebrow--dark reveal">Parcurs</p>
-          <h2 id="roadmap-heading" class="section-title section-title--light reveal reveal-delay-1">
+          <h2 id="roadmap-heading" class="section-title section-title--light reveal">
             La ce etapă suntem <em>acum?</em>
           </h2>
         </div>
@@ -362,6 +358,39 @@
 
     </div>
   </footer>
+
+  <!-- Floating E — scroll-driven shortcut wheel -->
+  <nav class="floating-e" id="floating-e" aria-label="Meniu rapid de navigare">
+    <div class="floating-e-trigger" id="floating-e-trigger">
+      <img src="assets/icon.png" alt="eCarnet" width="78" height="78" />
+    </div>
+    <div class="floating-e-menu" id="floating-e-menu" role="menu">
+      <a href="#acasa" class="floating-e-item" role="menuitem" data-label="Acasă" style="--i:0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </a>
+      <a href="#despre" class="floating-e-item" role="menuitem" data-label="Despre" style="--i:1">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      </a>
+      <a href="#functii" class="floating-e-item" role="menuitem" data-label="Funcții" style="--i:2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </a>
+      <a href="#progres" class="floating-e-item" role="menuitem" data-label="Progres" style="--i:3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </a>
+      <a href="mailto:cataragamihai2006@gmail.com" class="floating-e-item" role="menuitem" data-label="Mesaj" style="--i:4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- SVG filters (hidden) -->
+  <svg style="position:absolute;width:0;height:0" aria-hidden="true">
+    <filter id="paper-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="3" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="gray-noise"/>
+      <feBlend in="SourceGraphic" in2="gray-noise" mode="soft-light"/>
+    </filter>
+  </svg>
 
   <!-- Scripts -->
   <script src="js/main.js"></script>

@@ -328,6 +328,28 @@
   transform: translateX(0) scale(1);
 }
 
+/* ---- Floating E idle glow pulse ---- */
+@keyframes floating-e-glow {
+  0%, 100% {
+    box-shadow:
+      0 6px 28px rgba(0, 0, 0, 0.35),
+      0 0 40px rgba(0, 112, 204, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 55px rgba(0, 112, 204, 0.35);
+  }
+}
+
+.floating-e.visible:not(.is-open) .floating-e-trigger {
+  animation: floating-e-glow 3s ease-in-out infinite;
+}
+
+.floating-e.is-open .floating-e-trigger {
+  animation: none;
+}
+
 /* ---- Reduced Motion Overrides ---- */
 @media (prefers-reduced-motion: reduce) {
   .reveal,
@@ -381,9 +403,26 @@
     display: none;
   }
 
+  .hero-rings.snap-back { transition: none; }
   .hero-ring-arc { animation: none; opacity: 0.5; }
   @keyframes ring-pulse { 0%, 100% { opacity: 0.3; } }
   @keyframes icon-glow-pulse { 0%, 100% { } }
   @keyframes dot-pulse { 0%, 100% { } }
   @keyframes scroll-cue { 0%, 100% { } }
+
+  .floating-e {
+    transition: none;
+  }
+
+  .floating-e.visible {
+    transform: none;
+  }
+
+  .floating-e.visible .floating-e-trigger {
+    animation: none;
+  }
+
+  .floating-e-item {
+    transition: none;
+  }
 }
