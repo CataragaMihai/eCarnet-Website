@@ -85,32 +85,6 @@
   50%      { transform: perspective(600px) rotateY(-10deg) rotateX(4deg); }
 }
 
-/* ---- Carnet Float ---- */
-@keyframes carnet-float {
-  0%, 100% { transform: translateY(0px) rotate(-2deg); }
-  50%       { transform: translateY(-12px) rotate(-2deg); }
-}
-
-/* ---- Carnet Close (perspective fold) ---- */
-@keyframes carnet-close {
-  0%   { transform: perspective(600px) rotateY(0deg) scale(1); opacity: 1; }
-  60%  { transform: perspective(600px) rotateY(-80deg) scale(0.9); opacity: 0.6; }
-  100% { transform: perspective(600px) rotateY(-90deg) scale(0.8); opacity: 0; }
-}
-
-/* ---- Bridge icon zoom in ---- */
-@keyframes bridge-icon-zoom {
-  0%   { transform: scale(0.2) perspective(600px) rotateY(12deg); opacity: 0; }
-  60%  { transform: scale(1.08) perspective(600px) rotateY(-4deg); opacity: 1; }
-  100% { transform: scale(1) perspective(600px) rotateY(-8deg); opacity: 1; }
-}
-
-/* ---- Digital card reveal ---- */
-@keyframes digital-card-reveal {
-  0%   { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
 /* ---- Timeline dot pulse (box-shadow is ok for non-layout prop) ---- */
 @keyframes dot-pulse {
   0%, 100% {
@@ -127,13 +101,6 @@
   }
 }
 
-/* ---- Scroll Cue ---- */
-@keyframes scroll-cue {
-  0%   { transform: translateY(0); opacity: 0.7; }
-  60%  { transform: translateY(10px); opacity: 0.3; }
-  100% { transform: translateY(0); opacity: 0.7; }
-}
-
 /* ---- Hero text entrance ---- */
 @keyframes hero-word-rise {
   from {
@@ -146,69 +113,6 @@
     transform: translateY(0);
     filter: blur(0);
   }
-}
-
-/* ---- Navbar link underline glide ---- */
-@keyframes nav-underline {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
-
-/* ---- Feature card lift ---- */
-@keyframes card-hover-lift {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-4px); }
-}
-
-/* ---- Concept section: state classes ---- */
-
-/* Paper carnet: floating (default + explicit phase) */
-.concept-stage .carnet-paper,
-.concept-stage.phase-floating .carnet-paper {
-  animation: carnet-float 4s ease-in-out infinite;
-  transform-origin: center center;
-  transform-style: preserve-3d;
-  transition: opacity 0.3s ease;
-}
-
-/* Paper carnet: closing animation */
-.concept-stage.phase-closing .carnet-paper {
-  animation: carnet-close 0.7s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-}
-
-/* Paper carnet: gone */
-.concept-stage.phase-bridge .carnet-paper,
-.concept-stage.phase-digital .carnet-paper {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Bridge icon: hidden initially */
-.concept-stage .bridge-icon {
-  opacity: 0;
-  transform: scale(0.2) perspective(600px) rotateY(12deg);
-}
-
-/* Bridge icon: zooming in */
-.concept-stage.phase-bridge .bridge-icon {
-  animation: bridge-icon-zoom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Bridge icon: stays visible in digital phase */
-.concept-stage.phase-digital .bridge-icon {
-  opacity: 1;
-  transform: scale(1) perspective(600px) rotateY(-8deg);
-}
-
-/* Digital card: hidden initially */
-.concept-stage .digital-card-reveal {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-/* Digital card: revealed */
-.concept-stage.phase-digital .digital-card-reveal {
-  animation: digital-card-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
 }
 
 /* ============================================
@@ -250,37 +154,6 @@
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0);
-}
-
-/* ---- Section Dividers ---- */
-.section-divider {
-  position: relative;
-  margin-top: -1px;
-  line-height: 0;
-  overflow: hidden;
-  background: var(--navy-darkest);
-}
-
-.section-divider svg {
-  display: block;
-  width: 100%;
-  height: 60px;
-}
-
-.section-divider--light {
-  background: var(--bg-light);
-}
-
-.section-divider--light svg {
-  height: 40px;
-}
-
-.section-divider--to-dark {
-  background: var(--navy-deep);
-}
-
-.section-divider--to-dark svg {
-  height: 60px;
 }
 
 /* ---- 3D Card Tilt ---- */
@@ -357,31 +230,6 @@
     transition: none;
   }
 
-  .concept-stage .carnet-paper {
-    animation: none;
-    transform: rotate(-2deg);
-  }
-
-  .concept-stage.phase-closing .carnet-paper,
-  .concept-stage.phase-bridge .carnet-paper,
-  .concept-stage.phase-digital .carnet-paper {
-    animation: none;
-    opacity: 0;
-  }
-
-  .concept-stage.phase-bridge .bridge-icon,
-  .concept-stage.phase-digital .bridge-icon {
-    animation: none;
-    opacity: 1;
-    transform: scale(1) perspective(600px) rotateY(-8deg);
-  }
-
-  .concept-stage.phase-digital .digital-card-reveal {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
   .hero-entrance {
     opacity: 1;
     transform: none;
@@ -404,7 +252,6 @@
   @keyframes ring-pulse { 0%, 100% { opacity: 0.3; } }
   @keyframes icon-glow-pulse { 0%, 100% { } }
   @keyframes dot-pulse { 0%, 100% { } }
-  @keyframes scroll-cue { 0%, 100% { } }
 
   .floating-e {
     transition: none;
@@ -418,7 +265,4 @@
     animation: none;
   }
 
-  .floating-e-item {
-    transition: none;
-  }
 }

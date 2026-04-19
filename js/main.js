@@ -8,6 +8,29 @@
   "use strict";
 
   // ============================================
+  // EmailJS — init as early as possible
+  // ============================================
+  var EMAILJS_PUBLIC_KEY  = "JcHMwo9MQ774aS1ec";
+  var EMAILJS_SERVICE_ID  = "service_ovj1n8b";
+  var EMAILJS_TEMPLATE_ID = "template_6en3rbs";
+
+  function initEmailJS() {
+    try {
+      emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+    } catch (e) {
+      console.warn("EmailJS init failed:", e);
+    }
+  }
+
+  if (typeof emailjs !== "undefined") {
+    initEmailJS();
+  } else {
+    window.addEventListener("load", function () {
+      if (typeof emailjs !== "undefined") initEmailJS();
+    });
+  }
+
+  // ============================================
   // I18N — Translations
   // ============================================
 
@@ -70,7 +93,12 @@
       "roadmap.gh":        "Urmărește procesul pe GitHub",
 
       "footer.tagline": "Pentru elevii și studenții din Moldova.",
-      "footer.contact": "Contactează-mă"
+      "footer.contact": "Contactează-mă",
+
+      "capture.heading":     "Vrei să fii primul care află?",
+      "capture.placeholder": "email@tău.com",
+      "capture.cta":         "Notifică-mă",
+      "capture.thanks":      "Mulțumesc! Te anunț la lansare."
     },
 
     en: {
@@ -90,14 +118,14 @@
       "problem.subtitle": "Tens of thousands of students in Moldova face the same daily frustrations.",
       "problem.1.title":  "Easy to lose",
       "problem.1.text":   "The physical card can be left at home or lost — exactly when you need it most.",
-      "problem.2.title":  "Expires and deteriorates",
+      "problem.2.title":  "Expires every year",
       "problem.2.text":   "Paper wears out. Every new school year, it must be renewed. Time lost, money spent.",
       "problem.3.title":  "Unnecessary bureaucracy",
       "problem.3.text":   "Stamps, signatures, forms. An outdated process that wastes everyone's time.",
-      "problem.4.title":  "Disconnected from digital life",
-      "problem.4.text":   "It doesn't sync with your grades, absences, or schedule. It's an isolated object.",
-      "problem.5.title":  "Hard to verify quickly",
-      "problem.5.text":   "Without a digital validation system, any card can be faked or rejected.",
+      "problem.4.title":  "Just a piece of paper",
+      "problem.4.text":   "It doesn't show your grades, absences, or schedule. It's just a card.",
+      "problem.5.title":  "A recurring cost",
+      "problem.5.text":   "Every time you get a new card, lose it, or renew it — you pay. Over the years, it adds up.",
 
       "solution.eyebrow":  "The Solution",
       "solution.title":    "Same card. Now digital.",
@@ -131,7 +159,12 @@
       "roadmap.gh":        "Follow the process on GitHub",
 
       "footer.tagline": "For students across Moldova.",
-      "footer.contact": "Contact me"
+      "footer.contact": "Contact me",
+
+      "capture.heading":     "Want to be first to know?",
+      "capture.placeholder": "your@email.com",
+      "capture.cta":         "Notify me",
+      "capture.thanks":      "Thanks! I'll let you know at launch."
     },
 
     ru: {
@@ -151,14 +184,14 @@
       "problem.subtitle": "Десятки тысяч учеников и студентов Молдовы сталкиваются с одними и теми же неудобствами каждый день.",
       "problem.1.title":  "Легко потерять",
       "problem.1.text":   "Дневник можно забыть дома или потерять — именно тогда, когда он нужен.",
-      "problem.2.title":  "Истекает и изнашивается",
+      "problem.2.title":  "Истекает каждый год",
       "problem.2.text":   "Бумага изнашивается. Каждый учебный год нужно обновлять. Время и деньги потеряны.",
       "problem.3.title":  "Лишняя бюрократия",
       "problem.3.text":   "Печати, подписи, бланки. Устаревший процесс, который отнимает время у всех.",
-      "problem.4.title":  "Оторван от цифровой жизни",
-      "problem.4.text":   "Не синхронизируется с оценками, пропусками или расписанием. Это изолированный объект.",
-      "problem.5.title":  "Сложно проверить",
-      "problem.5.text":   "Без цифровой верификации любой дневник можно подделать или не признать.",
+      "problem.4.title":  "Просто бумага",
+      "problem.4.text":   "Не показывает оценки, пропуски или расписание. Это изолированный объект.",
+      "problem.5.title":  "Постоянные расходы",
+      "problem.5.text":   "Каждый раз, когда делаешь новый дневник, теряешь или обновляешь его — платишь. Со временем это накапливается.",
 
       "solution.eyebrow":  "Решение",
       "solution.title":    "Тот же билет. Теперь цифровой.",
@@ -192,7 +225,12 @@
       "roadmap.gh":        "Следить за процессом на GitHub",
 
       "footer.tagline": "Для учеников и студентов Молдовы.",
-      "footer.contact": "Написать мне"
+      "footer.contact": "Написать мне",
+
+      "capture.heading":     "Хочешь узнать первым?",
+      "capture.placeholder": "твой@email.com",
+      "capture.cta":         "Уведомить меня",
+      "capture.thanks":      "Спасибо! Сообщу о запуске."
     }
   };
 
@@ -204,7 +242,7 @@
     ru: "assets/mockup russian.png"
   };
 
-  // Label order matches DOM order of .floating-e-item and .hero-shortcut-item
+  // Label order matches DOM order of .hero-shortcut-item
   var navLabelKeys = ["nav.home", "nav.problem", "nav.solution", "nav.roadmap", "nav.contact"];
 
   function applyTranslations(lang) {
@@ -221,16 +259,15 @@
       if (t[key] !== undefined) el.innerHTML = t[key];
     });
 
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-placeholder");
+      if (t[key] !== undefined) el.placeholder = t[key];
+    });
+
     document.documentElement.lang = lang;
 
     document.querySelectorAll(".lang-btn").forEach(function (btn) {
       btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
-    });
-
-    // Update floating-e item tooltips
-    document.querySelectorAll(".floating-e-item").forEach(function (item, i) {
-      var key = navLabelKeys[i];
-      if (key && t[key]) item.setAttribute("data-label", t[key]);
     });
 
     // Update hero shortcut item tooltips
@@ -469,10 +506,6 @@
     });
   }
 
-  // ---- Parallax Mockup ----
-  if (!prefersReducedMotion) {
-  }
-
   // ============================================
   // Hero Icon — Draggable + Shortcut Wheel
   // ============================================
@@ -605,8 +638,6 @@
   var floatingTrigger = document.getElementById("floating-e-trigger");
   var heroSection     = document.getElementById("acasa");
   var floatingEOpen   = false;
-
-  var isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
   function openFloatingMenu()  { floatingEOpen = true;  floatingE.classList.add("is-open"); }
   function closeFloatingMenu() { floatingEOpen = false; floatingE.classList.remove("is-open"); }
@@ -783,7 +814,7 @@
 
     var hoverCloseTimer = null;
 
-    if (isTouchDevice) {
+    if (isTouch) {
       floatingTrigger.addEventListener("click", function (e) {
         if (wasDragged) return;
         e.stopPropagation();
@@ -818,9 +849,129 @@
       }
     });
 
-    floatingE.querySelectorAll(".floating-e-item").forEach(function (item) {
-      item.addEventListener("click", function () { closeFloatingMenu(); });
+    // Email capture
+    var captureForm   = document.getElementById("capture-form");
+    var captureThanks = document.getElementById("capture-thanks");
+
+    var captureHeading = document.querySelector(".capture-heading");
+
+    function showCaptureThanks() {
+      if (captureHeading) captureHeading.style.display = "none";
+      if (captureForm)    captureForm.style.display    = "none";
+      if (captureThanks)  captureThanks.style.display  = "block";
+    }
+
+    function showCaptureForm() {
+      if (captureHeading) captureHeading.style.display = "";
+      if (captureForm)    captureForm.style.display    = "";
+      if (captureThanks)  captureThanks.style.display  = "none";
+    }
+
+    var captureSubmitted = false;
+
+    function checkCaptureState() {
+      if (captureSubmitted) showCaptureThanks();
+      else showCaptureForm();
+    }
+
+    var originalOpenFloating = openFloatingMenu;
+    openFloatingMenu = function () { originalOpenFloating(); checkCaptureState(); };
+
+    if (captureForm) {
+      captureForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var emailInput = document.getElementById("capture-email");
+        var email = emailInput ? emailInput.value.trim() : "";
+        if (!email) return;
+
+        try {
+          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { email: email, name: "eCarnet Visitor" })
+            .catch(function (err) { console.error("EmailJS error:", err); });
+        } catch (err) { console.error("EmailJS send exception:", err); }
+
+        captureSubmitted = true;
+        showCaptureThanks();
+      });
+    }
+  }
+
+  // Profile card
+  var attributionTrigger = document.getElementById("attribution-trigger");
+  var profileCard        = document.getElementById("profile-card");
+  var profileCardTimer   = null;
+
+  if (attributionTrigger && profileCard) {
+    function openProfileCard() {
+      if (profileCardTimer) { clearTimeout(profileCardTimer); profileCardTimer = null; }
+      profileCard.classList.add("visible");
+      profileCard.setAttribute("aria-hidden", "false");
+      attributionTrigger.setAttribute("aria-expanded", "true");
+    }
+
+    function closeProfileCard() {
+      profileCard.classList.remove("visible");
+      profileCard.setAttribute("aria-hidden", "true");
+      attributionTrigger.setAttribute("aria-expanded", "false");
+    }
+
+    attributionTrigger.addEventListener("mouseenter", openProfileCard);
+    profileCard.addEventListener("mouseenter",  function () {
+      if (profileCardTimer) { clearTimeout(profileCardTimer); profileCardTimer = null; }
     });
+    attributionTrigger.addEventListener("mouseleave", function () {
+      profileCardTimer = setTimeout(closeProfileCard, 200);
+    });
+    profileCard.addEventListener("mouseleave", function () {
+      profileCardTimer = setTimeout(closeProfileCard, 200);
+    });
+
+    attributionTrigger.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (profileCard.classList.contains("visible")) closeProfileCard();
+      else openProfileCard();
+    });
+
+    document.addEventListener("click", function (e) {
+      if (profileCard.classList.contains("visible") &&
+          !attributionTrigger.contains(e.target) &&
+          !profileCard.contains(e.target)) {
+        closeProfileCard();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && profileCard.classList.contains("visible")) {
+        closeProfileCard();
+        attributionTrigger.focus();
+      }
+    });
+
+    // macOS traffic light buttons
+    var pcClose    = document.getElementById("pc-close");
+    var pcMinimize = document.getElementById("pc-minimize");
+    var pcZoom     = document.getElementById("pc-zoom");
+
+    if (pcClose) {
+      pcClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        closeProfileCard();
+      });
+    }
+
+    if (pcMinimize) {
+      pcMinimize.addEventListener("click", function (e) {
+        e.stopPropagation();
+        profileCard.classList.add("minimized");
+        setTimeout(function () { closeProfileCard(); profileCard.classList.remove("minimized"); }, 520);
+      });
+    }
+
+    if (pcZoom) {
+      pcZoom.addEventListener("click", function (e) {
+        e.stopPropagation();
+        profileCard.classList.toggle("zoomed");
+      });
+    }
   }
 
 })();
