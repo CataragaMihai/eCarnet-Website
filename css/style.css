@@ -652,9 +652,7 @@ a   { color: inherit; }
   overflow: hidden;
   transform: perspective(600px) rotateY(-16deg) rotateX(8deg);
   animation: icon-glow-pulse 3s ease-in-out infinite, icon-3d-rock 6s ease-in-out infinite;
-  filter: drop-shadow(-8px 12px 24px rgba(0, 0, 0, 0.6))
-          drop-shadow(0 0 16px rgba(0, 112, 204, 0.5))
-          drop-shadow(0 0 40px rgba(0, 112, 204, 0.25));
+  filter: none;
 }
 
 .hero-app-icon {
@@ -1130,8 +1128,10 @@ a   { color: inherit; }
   pointer-events: none;
   transition:
     opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    padding 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    font-size 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.55),
     0 0 0 0.5px rgba(255, 255, 255, 0.06) inset;
@@ -1205,19 +1205,37 @@ a   { color: inherit; }
     border-radius 0.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-/* Zoomed — wider card */
+/* Zoomed — grow all dimensions ~1.75x for crisp rendering */
 .profile-card.zoomed {
-  width: 360px;
+  width: 490px;
+}
+.profile-card.zoomed .profile-card-bar {
+  padding: 17px 24px 16px;
+  gap: 12px;
+}
+.profile-card.zoomed .tl {
+  width: 21px;
+  height: 21px;
+}
+.profile-card.zoomed .profile-card-body {
+  gap: 24px;
+  padding: 28px 28px 32px;
 }
 .profile-card.zoomed .profile-card-photo {
-  width: 88px;
-  height: 88px;
+  width: 112px;
+  height: 112px;
+}
+.profile-card.zoomed .profile-card-info {
+  gap: 7px;
 }
 .profile-card.zoomed .profile-card-info strong {
-  font-size: 1.05rem;
+  font-size: 1.6rem;
 }
 .profile-card.zoomed .profile-card-info span {
-  font-size: 0.82rem;
+  font-size: 1.3rem;
+}
+.profile-card.zoomed .profile-card-link {
+  font-size: 1.3rem;
 }
 
 .profile-card-body {
@@ -1853,10 +1871,9 @@ a   { color: inherit; }
   align-items: center;
   gap: var(--sp-2);
   font-family: "Poppins", sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--blue-medium);
   margin-bottom: var(--sp-4);
 }

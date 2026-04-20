@@ -42,10 +42,10 @@
       "nav.roadmap": "Progres",
       "nav.contact": "Mesaj",
 
-      "hero.tag":      "Carnetul de elev, reinventat",
-      "hero.title":    "Carnetul tău de elev,<br><span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">digital.</span></span>",
-      "hero.subtitle": "eCarnet înlocuiește carnetul fizic cu o soluție digitală. Mereu cu tine, niciodată pierdut.",
-      "hero.cta":      "Descoperă",
+      "hero.tag":      "Ce este eCarnet?",
+      "hero.title":    "eCarnet este carnetul tău <span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">digital</span></span>",
+      "hero.subtitle": "eCarnet înlocuiește carnetul de elev sau student din hârtie cu o soluție digitală.",
+      "hero.cta":      "Află mai multe",
 
       "problem.eyebrow":  "Problema",
       "problem.title":    "Carnetul fizic este învechit.",
@@ -95,7 +95,7 @@
       "footer.tagline": "Pentru elevii și studenții din Moldova.",
       "footer.contact": "Contactează-mă",
 
-      "capture.heading":     "Vrei să fii primul care află?",
+      "capture.heading":     "Vrei să fii la curent cu progresul eCarnet?",
       "capture.placeholder": "email@tău.com",
       "capture.cta":         "Notifică-mă",
       "capture.thanks":      "Mulțumesc! Te anunț la lansare."
@@ -108,10 +108,10 @@
       "nav.roadmap": "Progress",
       "nav.contact": "Message",
 
-      "hero.tag":      "The student ID, reinvented",
-      "hero.title":    "Your student ID,<br><span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">on your phone.</span></span>",
-      "hero.subtitle": "eCarnet replaces the physical student card with a digital solution. Always with you, never lost.",
-      "hero.cta":      "Discover",
+      "hero.tag":      "What is eCarnet?",
+      "hero.title":    "eCarnet is your <span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">digital</span></span> student ID",
+      "hero.subtitle": "eCarnet replaces the paper student card with a digital solution.",
+      "hero.cta":      "Learn more",
 
       "problem.eyebrow":  "The Problem",
       "problem.title":    "The physical student card isn't keeping up.",
@@ -161,7 +161,7 @@
       "footer.tagline": "For students across Moldova.",
       "footer.contact": "Contact me",
 
-      "capture.heading":     "Want to be first to know?",
+      "capture.heading":     "Want to stay updated on eCarnet's progress?",
       "capture.placeholder": "your@email.com",
       "capture.cta":         "Notify me",
       "capture.thanks":      "Thanks! I'll let you know at launch."
@@ -174,9 +174,9 @@
       "nav.roadmap": "Прогресс",
       "nav.contact": "Сообщение",
 
-      "hero.tag":      "Студенческий билет, переосмыслен",
-      "hero.title":    "Твой студенческий билет,<br><span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">в телефоне.</span></span>",
-      "hero.subtitle": "eCarnet заменяет бумажный дневник цифровым решением. Всегда под рукой, никогда не теряется.",
+      "hero.tag":      "Что такое eCarnet?",
+      "hero.title":    "eCarnet — твоя <span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">электронная</span></span> студенческая книжка",
+      "hero.subtitle": "eCarnet заменяет бумажную студенческую книжку цифровым решением.",
       "hero.cta":      "Узнать больше",
 
       "problem.eyebrow":  "Проблема",
@@ -227,7 +227,7 @@
       "footer.tagline": "Для учеников и студентов Молдовы.",
       "footer.contact": "Написать мне",
 
-      "capture.heading":     "Хочешь узнать первым?",
+      "capture.heading":     "Хочешь следить за прогрессом eCarnet?",
       "capture.placeholder": "твой@email.com",
       "capture.cta":         "Уведомить меня",
       "capture.thanks":      "Спасибо! Сообщу о запуске."
@@ -566,12 +566,6 @@
       if (!heroDragging) return;
       heroDragging = false;
       heroAppIcon.classList.remove("is-dragging");
-
-      if (!heroWasDragged) {
-        // Treat as tap/click — toggle shortcut wheel
-        if (heroShortcutOpen) closeHeroShortcut();
-        else openHeroShortcut();
-      }
 
       heroTransX = 0;
       heroTransY = 0;
@@ -969,7 +963,9 @@
     if (pcZoom) {
       pcZoom.addEventListener("click", function (e) {
         e.stopPropagation();
-        profileCard.classList.toggle("zoomed");
+        var isZoomed = profileCard.classList.toggle("zoomed");
+        pcZoom.title = isZoomed ? "Unzoom" : "Zoom";
+        pcZoom.setAttribute("aria-label", isZoomed ? "Unzoom" : "Zoom");
       });
     }
   }
