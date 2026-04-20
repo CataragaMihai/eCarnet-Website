@@ -797,6 +797,7 @@
 
     var floatingETicking = false;
     window.addEventListener("scroll", function () {
+      if (floatingEOpen) closeFloatingMenu();
       if (!floatingETicking) {
         floatingETicking = true;
         requestAnimationFrame(function () { updateFloatingE(); floatingETicking = false; });

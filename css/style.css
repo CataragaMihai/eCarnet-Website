@@ -1295,6 +1295,21 @@ a   { color: inherit; }
     left: 0;
     width: 260px;
   }
+
+  .profile-card.zoomed {
+    width: min(360px, calc(100vw - 24px));
+  }
+  .profile-card.zoomed .profile-card-photo {
+    width: 80px;
+    height: 80px;
+  }
+  .profile-card.zoomed .profile-card-info strong {
+    font-size: 1.15rem;
+  }
+  .profile-card.zoomed .profile-card-info span,
+  .profile-card.zoomed .profile-card-link {
+    font-size: 0.95rem;
+  }
 }
 
 /* ============================================
