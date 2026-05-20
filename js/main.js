@@ -42,10 +42,9 @@
       "nav.roadmap": "Progres",
       "nav.contact": "Mesaj",
 
-      "hero.tag":      "Ce este eCarnet?",
       "hero.title":    "eCarnet este carnetul tău <span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">digital</span></span>",
-      "hero.subtitle": "eCarnet înlocuiește carnetul de elev sau student din hârtie cu o soluție digitală.",
-      "hero.cta":      "Află mai multe",
+      "hero.subtitle": "eCarnet înlocuiește carnetul fizic cu o soluție digitală. Mereu cu tine, niciodată pierdut.",
+      "hero.cta":      "Vezi cum funcționează",
 
       "problem.eyebrow":  "Problema",
       "problem.title":    "Carnetul fizic este învechit.",
@@ -63,11 +62,11 @@
 
       "solution.eyebrow":  "Soluția",
       "solution.title":    "Același carnet. Acum digital.",
-      "solution.subtitle": "eCarnet este o aplicație mobilă care aduce carnetul de elev sau student în telefon — simplu, sigur, modern.",
+      "solution.subtitle": "eCarnet este o aplicație mobilă care aduce carnetul de elev sau student în telefon, simplu, sigur, modern.",
       "solution.f1.title": "Identitate digitală verificabilă",
       "solution.f1.text":  "Arăți telefonul și gata. Funcționează oriunde ai nevoie să dovedești că ești elev sau student.",
       "solution.f2.title": "Note și absențe",
-      "solution.f2.text":  "Catalogul electronic la îndemână. Note, medii, absențe — totul într-un singur loc.",
+      "solution.f2.text":  "Catalogul electronic la îndemână. Note, medii, absențe, totul într-un singur loc.",
       "solution.f3.title": "Orar și notițe",
       "solution.f3.text":  "Orarul zilei, teme, notițe personale. O agendă care ține totul la un loc.",
 
@@ -76,13 +75,13 @@
       "roadmap.subtitle":  "eCarnet încă nu e gata. Iată unde suntem și unde vrem să ajungem.",
       "roadmap.s1.badge":  "Acum",
       "roadmap.s1.title":  "Concept și design",
-      "roadmap.s1.text":   "Definim arhitectura aplicației, fluxurile de utilizare, designul vizual și strategia produsului.",
+      "roadmap.s1.text":   "Definim structura aplicației, modul de utilizare și designul vizual.",
       "roadmap.s2.badge":  "Urmează",
       "roadmap.s2.title":  "Prototip funcțional",
       "roadmap.s2.text":   "Prima versiune funcțională a aplicației mobile, testată intern cu un set limitat de utilizatori.",
       "roadmap.s3.badge":  "Viitor",
       "roadmap.s3.title":  "Pilot cu o instituție",
-      "roadmap.s3.text":   "Colaborare cu o școală sau universitate din Chișinău pentru un test real în condiții reale.",
+      "roadmap.s3.text":   "Colaborare cu o școală din Chișinău pentru un test real în condiții reale.",
       "roadmap.s4.badge":  "Viitor",
       "roadmap.s4.title":  "Rafinare și securitate",
       "roadmap.s4.text":   "Îmbunătățiri bazate pe feedback real. Audit de securitate, sistem de validare digitală.",
@@ -456,33 +455,6 @@
     }, 100);
   } else {
     heroEntrances.forEach(function (el) { el.classList.add("visible"); });
-  }
-
-  // ---- 3D Card Tilt (desktop only) ----
-  if (!isTouch && !prefersReducedMotion) {
-    var featureCards = document.querySelectorAll(".feature-card");
-
-    featureCards.forEach(function (card) {
-      card.addEventListener("mouseenter", function () { card.classList.add("tilt-active"); });
-
-      card.addEventListener("mousemove", function (e) {
-        var rect = card.getBoundingClientRect();
-        var x = e.clientX - rect.left;
-        var y = e.clientY - rect.top;
-        var centerX = rect.width / 2;
-        var centerY = rect.height / 2;
-        var rotateY = ((x - centerX) / centerX) * 8;
-        var rotateX = ((centerY - y) / centerY) * 8;
-        card.style.transform = "perspective(800px) rotateX(" + rotateX + "deg) rotateY(" + rotateY + "deg)";
-        card.style.boxShadow = (rotateY * -0.5) + "px " + (rotateX * 0.5 + 8) + "px 30px rgba(0,0,0,0.12)";
-      });
-
-      card.addEventListener("mouseleave", function () {
-        card.classList.remove("tilt-active");
-        card.style.transform = "";
-        card.style.boxShadow = "";
-      });
-    });
   }
 
   // ---- Magnetic CTA Button (desktop only) ----

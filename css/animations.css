@@ -156,23 +156,6 @@
   filter: blur(0);
 }
 
-/* ---- 3D Card Tilt ---- */
-.feature-card {
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-.feature-card.tilt-active {
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-}
-
-.feature-card .feature-card-top,
-.feature-card .feature-text,
-.feature-card .feature-tag,
-.feature-card .feature-uses {
-  transform: translateZ(20px);
-}
-
 /* ---- Magnetic Button ---- */
 .cta-btn {
   will-change: transform;
