@@ -237,7 +237,7 @@
 
   var mockupSrcs = {
     ro: "assets/mockup.png",
-    en: "assets/mockup english.png",
+    en: "assets/mockup-english.png",
     ru: "assets/mockup russian.png"
   };
 
