@@ -28,7 +28,7 @@ window.I18N = {
 
     "solution.heading": "Același carnet, acum digital.",
     "solution.easter": "totul pentru elevi",
-    "solution.featuresHeading": "Iată ce primești.",
+    "solution.featuresHeading": "Iată ce îți oferă.",
     "solution.f1.title": "Identitate de elev digitală",
     "solution.f1.desc": "Arăți telefonul și gata. Funcționează oriunde ai nevoie să dovedești că ești elev sau student.",
     "solution.f1.tag1": "Transport public",
