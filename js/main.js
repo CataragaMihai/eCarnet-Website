@@ -25,9 +25,23 @@ document.getElementById('cta-main').addEventListener('click', function (e) {
 });
 
 // Stagger delay for grouped animated elements
-document.querySelectorAll('.problem-grid, .features-col').forEach(group => {
+document.querySelectorAll('.problem-grid, .features-col, .faq-list').forEach(group => {
   group.querySelectorAll('.animate-in').forEach((el, i) => {
     el.style.transitionDelay = `${i * 0.12}s`;
+  });
+});
+
+// FAQ accordion — single-open: clicking a question closes any other open one.
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.closest('.faq-item');
+    const willOpen = !item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(openItem => {
+      openItem.classList.remove('open');
+      openItem.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+    });
+    item.classList.toggle('open', willOpen);
+    q.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
   });
 });
 
@@ -215,12 +229,8 @@ window.addEventListener('scroll', function hideScroll() {
 // springs home on release. The ring (.ring-magnet) eases toward the icon's
 // target each frame, so it lags slightly — barely there, but felt. Both layers
 // sit inside the scroll-animated orbit, so they keep its scroll drift.
-const orbit = document.querySelector('.solution-orbit');
-const iconMagnet = document.querySelector('.icon-magnet');
-const ringMagnet = document.querySelector('.ring-magnet');
-const dragHandle = document.querySelector('.solution-icon');
-
-if (orbit && iconMagnet && ringMagnet && dragHandle) {
+function initMagneticOrbit(orbit, iconMagnet, ringMagnet, dragHandle) {
+  if (!(orbit && iconMagnet && ringMagnet && dragHandle)) return;
   let dragging = false;
   let startX = 0, startY = 0;
   let targetX = 0, targetY = 0;   // where the icon is (pointer offset, or 0 at rest)
@@ -277,6 +287,21 @@ if (orbit && iconMagnet && ringMagnet && dragHandle) {
   dragHandle.addEventListener('pointerup', endDrag);
   dragHandle.addEventListener('pointercancel', endDrag);
 }
+
+// Same magnetic drag on both: desktop solution orbit (section 3) and the mobile
+// hero orbit (section 1) — drag the e-icon, the dashed ring trails after it.
+initMagneticOrbit(
+  document.querySelector('.solution-orbit'),
+  document.querySelector('.solution-orbit .icon-magnet'),
+  document.querySelector('.solution-orbit .ring-magnet'),
+  document.querySelector('.solution-icon')
+);
+initMagneticOrbit(
+  document.querySelector('.hero-orbit-mobile'),
+  document.querySelector('.hero-orbit-mobile .icon-magnet'),
+  document.querySelector('.hero-orbit-mobile .ring-magnet'),
+  document.querySelector('.hero-orbit-icon')
+);
 
 // Problem cards: cursor spotlight. Feed the pointer position into CSS vars so
 // the ::before glow tracks the mouse. rAF-throttled to one write per frame.

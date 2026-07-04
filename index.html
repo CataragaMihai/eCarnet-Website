@@ -44,6 +44,7 @@
           <li><a href="#problema" class="nav-link" data-i18n="nav.problem">Problema</a></li>
           <li><a href="#solutia"  class="nav-link" data-i18n="nav.solution">Soluția</a></li>
           <li><a href="#progres"  class="nav-link" data-i18n="nav.progress">Progres</a></li>
+          <li><a href="#faq"      class="nav-link" data-i18n="nav.faq">Întrebări</a></li>
         </ul>
 
         <div class="drawer-divider" aria-hidden="true"></div>
@@ -98,10 +99,14 @@
         <!-- Mobile-only hero visual: static orbit (dashed ring + app icon).
              The phone mockup moves to the solution section on mobile (per Figma). -->
         <div class="hero-orbit-mobile" aria-hidden="true">
-          <svg class="solution-orbit-ring" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="180" cy="180" r="179" stroke="#0072D2" stroke-width="1.8" stroke-dasharray="10 15" />
-          </svg>
-          <img src="assets/icon.png" alt="" class="hero-orbit-icon" draggable="false">
+          <div class="ring-magnet">
+            <svg class="solution-orbit-ring" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="180" cy="180" r="179" stroke="#0072D2" stroke-width="1.8" stroke-dasharray="10 15" />
+            </svg>
+          </div>
+          <div class="icon-magnet">
+            <img src="assets/icon.png" alt="" class="hero-orbit-icon" draggable="false">
+          </div>
         </div>
 
         <p class="hero-subtitle">
@@ -328,6 +333,102 @@
     </div>
   </section>
 
+  <!-- FAQ -->
+  <section id="faq" class="faq-section">
+    <div class="faq-inner">
+
+      <h2 class="faq-heading animate-in" data-i18n="faq.heading">Întrebări frecvente</h2>
+
+      <div class="faq-list">
+
+        <div class="faq-item animate-in">
+          <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">
+            <span data-i18n="faq.q1">Este gratuit?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="faq-a" id="faq-a1" role="region" aria-labelledby="faq-q1">
+            <div class="faq-a-inner">
+              <p data-i18n="faq.a1">Da, este absolut gratuit.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item animate-in">
+          <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">
+            <span data-i18n="faq.q2">Este recunoscut oficial?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="faq-a" id="faq-a2" role="region" aria-labelledby="faq-q2">
+            <div class="faq-a-inner">
+              <p data-i18n="faq.a2">Încă nu, dar sunt în desfășurare discuții oficiale cu Ministerul.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item animate-in">
+          <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">
+            <span data-i18n="faq.q3">Ce se întâmplă dacă îmi pierd telefonul?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="faq-a" id="faq-a3" role="region" aria-labelledby="faq-q3">
+            <div class="faq-a-inner">
+              <p data-i18n="faq.a3">Contul tău rămâne salvat — te autentifici din nou și totul e la loc.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item animate-in">
+          <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a4" id="faq-q4">
+            <span data-i18n="faq.q4">Ce școli îl acceptă?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="faq-a" id="faq-a4" role="region" aria-labelledby="faq-q4">
+            <div class="faq-a-inner">
+              <p data-i18n="faq.a4">Deocamdată niciuna, dar pregătim lansarea unei faze-pilot.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item animate-in">
+          <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a5" id="faq-q5">
+            <span data-i18n="faq.q5">Cum îmi sunt protejate datele?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="faq-a" id="faq-a5" role="region" aria-labelledby="faq-q5">
+            <div class="faq-a-inner">
+              <p data-i18n="faq.a5">Datele tale sunt criptate end-to-end și le poți șterge oricând. Lucrăm și la un audit de securitate.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item animate-in">
+          <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a6" id="faq-q6">
+            <span data-i18n="faq.q6">Când va fi lansat?</span>
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="faq-a" id="faq-a6" role="region" aria-labelledby="faq-q6">
+            <div class="faq-a-inner">
+              <p data-i18n="faq.a6">Versiunea finală va fi lansată probabil peste un an. Momentan, este într-o etapă incipientă de dezvoltare.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-inner">
@@ -351,6 +452,7 @@
             <li><a href="#problema" class="footer-link" data-i18n="nav.problem">Problema</a></li>
             <li><a href="#solutia"  class="footer-link" data-i18n="nav.solution">Soluția</a></li>
             <li><a href="#progres"  class="footer-link" data-i18n="nav.progress">Progres</a></li>
+            <li><a href="#faq"      class="footer-link" data-i18n="nav.faq">Întrebări</a></li>
           </ul>
         </nav>
 

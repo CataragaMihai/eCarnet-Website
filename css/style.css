@@ -994,10 +994,12 @@ body.lang-switching {
   margin-bottom: 20px;
 }
 
-/* Equal thirds keep the nav centered to the page; brand/copyright are nudged
-   left with a relative offset so they don't disturb that centering. */
+/* Brand and contact keep equal weight so the nav stays centered on the page;
+   the nav gets extra width (flex 1.6) so all five links sit on one row instead
+   of wrapping. brand/copyright are nudged left with a relative offset so they
+   don't disturb that centering. */
 .footer-col-brand   { flex: 1; align-items: flex-start; position: relative; left: calc(-1 * var(--footer-shift)); }
-.footer-col-nav     { flex: 1; align-items: center; }
+.footer-col-nav     { flex: 1.6; align-items: center; }
 .footer-col-connect { flex: 1; align-items: flex-end; text-align: right; position: relative; left: var(--footer-shift); }
 
 .footer-col {
@@ -1073,11 +1075,14 @@ body.lang-switching {
   color: #f5f5f5;
 }
 
-/* Nav links laid out in a single horizontal row */
+/* Nav links in one evenly-spaced horizontal row (the wider nav column fits all
+   five). Centered, and allowed to wrap only as a graceful fallback on very
+   narrow desktop widths. */
 .footer-links-row {
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 12px 24px;
+  justify-content: center;
+  gap: 12px 22px;
 }
 
 /* GitHub line: icon + plain phrase, with only the word "GitHub" linked */
@@ -1445,6 +1450,8 @@ body.lang-switching {
   font-size: 18px;
   text-decoration: none;
   padding: 0 32px;
+  min-width: 200px;
+  text-align: center;
   height: 46px;
   line-height: 46px;
   border-radius: 18px;
@@ -1917,6 +1924,115 @@ html[lang="ro"] .headline-gradient {
   font-size: clamp(54px, 4.8vw + 19px, 86px);
 }
 
+/* ── FAQ ───────────────────────────────────────────────── */
+.faq-section {
+  background: #faf9f6;
+  padding-top: 60px;
+}
+
+.faq-inner {
+  /* Narrower than the other sections — a single column of Q&A reads better
+     tight than stretched to the full 1312px grid. */
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 64px var(--side-pad) 96px;
+}
+
+.faq-heading {
+  font-family: 'Fira Sans Condensed', sans-serif;
+  font-weight: 800;
+  font-size: clamp(30px, 3.45vw + 3.4px, 52px);
+  color: #0e2f44;
+  line-height: 0.97;
+  margin-bottom: 40px;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.faq-item {
+  background: #fff;
+  border: 0.4px solid #ebebeb;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.24s ease;
+}
+
+.faq-item.open {
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.08);
+}
+
+/* The question is a full-width button so keyboard + focus work for free. */
+.faq-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Gabarito', sans-serif;
+  font-weight: 600;
+  font-size: 19px;
+  color: #0e2f44;
+  line-height: 1.35;
+  transition: color 0.2s ease;
+}
+
+.faq-q:hover { color: #0072d2; }
+
+.faq-chevron {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: #5a96c4;
+  transition: transform 0.32s cubic-bezier(0.2, 0, 0, 1),
+              color     0.2s ease;
+}
+
+.faq-q:hover .faq-chevron { color: #0072d2; }
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+/* Expand/collapse via grid-template-rows 0fr→1fr — animates smoothly to the
+   content's natural height without JS measuring (unlike max-height). */
+.faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.faq-item.open .faq-a { grid-template-rows: 1fr; }
+
+.faq-a-inner {
+  overflow: hidden;
+  min-height: 0;   /* let the grid row actually collapse to 0 */
+}
+
+.faq-a p {
+  padding: 0 24px 22px;
+  font-family: 'Gantari', sans-serif;
+  font-weight: 400;
+  font-size: 17px;
+  color: #40525f;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+@media (max-width: 768px) {
+  .faq-inner { padding: 40px 24px 64px; }
+  .faq-heading { font-size: 32px; margin-bottom: 28px; }
+  .faq-q { padding: 16px 18px; font-size: 17px; }
+  .faq-a p { padding: 0 18px 18px; font-size: 15px; }
+}
+
 /* ════════════════════════════════════════════════════════════════════════
    RESPONSIVE — mobile & tablet (Figma node 107:5)
    Everything above is the untouched desktop design. This section holds:
@@ -2129,8 +2245,9 @@ html[lang="ro"] .headline-gradient {
   body.drawer-open .nav-drawer .nav-links li:nth-child(2) { transition-delay: 0.11s; }
   body.drawer-open .nav-drawer .nav-links li:nth-child(3) { transition-delay: 0.16s; }
   body.drawer-open .nav-drawer .nav-links li:nth-child(4) { transition-delay: 0.21s; }
-  body.drawer-open .nav-drawer .drawer-divider            { transition-delay: 0.26s; }
-  body.drawer-open .nav-drawer .lang-switcher             { transition-delay: 0.31s; }
+  body.drawer-open .nav-drawer .nav-links li:nth-child(5) { transition-delay: 0.26s; }
+  body.drawer-open .nav-drawer .drawer-divider            { transition-delay: 0.31s; }
+  body.drawer-open .nav-drawer .lang-switcher             { transition-delay: 0.36s; }
 
   .nav-overlay {
     display: block;
@@ -2217,6 +2334,10 @@ html[lang="ro"] .headline-gradient {
     width: 120px;
     height: 120px;
     border-radius: 30px;
+    cursor: grab;
+    touch-action: none;              /* let it be dragged on touch without scrolling */
+    user-select: none;
+    -webkit-user-drag: none;
     /* Slight tilt (Figma ≈12.4°) + a strong, saturated blue glow gives the icon
        depth. It gently floats and the glow pulses, so it reads as lit and alive
        rather than flat. The float keyframes carry the base tilt. */
@@ -2227,6 +2348,8 @@ html[lang="ro"] .headline-gradient {
     animation: hero-icon-float 5s ease-in-out infinite,
                hero-icon-glow  3.4s ease-in-out infinite;
   }
+
+  .hero-orbit-mobile.dragging .hero-orbit-icon { cursor: grabbing; }
 
   /* Gentle 3D bob + rock (carries the resting 12° tilt). */
   @keyframes hero-icon-float {
