@@ -28,6 +28,7 @@ window.I18N = {
 
     "solution.heading": "Același carnet, acum digital.",
     "solution.easter": "totul pentru elevi",
+    "solution.featuresHeading": "Iată ce primești.",
     "solution.f1.title": "Identitate de elev digitală",
     "solution.f1.desc": "Arăți telefonul și gata. Funcționează oriunde ai nevoie să dovedești că ești elev sau student.",
     "solution.f1.tag1": "Transport public",
@@ -95,6 +96,7 @@ window.I18N = {
 
     "solution.heading": "The same card, now digital.",
     "solution.easter": "everything for students",
+    "solution.featuresHeading": "This is what you get.",
     "solution.f1.title": "Digital student identity",
     "solution.f1.desc": "Just show your phone. It works anywhere you need to prove you're a student.",
     "solution.f1.tag1": "Public transport",
@@ -162,6 +164,7 @@ window.I18N = {
 
     "solution.heading": "Тот же билет, теперь цифровой.",
     "solution.easter": "всё для учеников",
+    "solution.featuresHeading": "Вот что ты получаешь.",
     "solution.f1.title": "Цифровое удостоверение ученика",
     "solution.f1.desc": "Просто показываешь телефон — и готово. Работает везде, где нужно подтвердить, что ты ученик или студент.",
     "solution.f1.tag1": "Общественный транспорт",

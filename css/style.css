@@ -1933,7 +1933,8 @@ html[lang="ro"] .headline-gradient {
 .drawer-divider,
 .nav-overlay,
 .hero-orbit-mobile,
-.solution-phone-mobile {
+.solution-phone-mobile,
+.solution-features-heading {
   display: none;
 }
 
@@ -2251,6 +2252,10 @@ html[lang="ro"] .headline-gradient {
     text-align: center;
   }
 
+  /* Drop the closing sentence on mobile — it doesn't lead into the "Why?" CTA
+     as cleanly as it does on desktop, where it fills the column. */
+  .hero-sub2 { display: none; }
+
   /* Wider CTA pill per Figma (~68% of the frame width). */
   .cta-btn {
     margin-top: 30px;
@@ -2319,8 +2324,10 @@ html[lang="ro"] .headline-gradient {
     width: 88%;
     margin-bottom: 9px;
   }
-  .sk-sub-b     { width: 92%; }
-  .sk-sub-c     { width: 80%; }
+  /* Only one sentence on mobile now (sub2 is hidden) — drop the two extra bars
+     so the skeleton height matches the real, shorter description. */
+  .sk-sub-b,
+  .sk-sub-c     { display: none; }
   .sk-sub-short { width: 58%; margin-bottom: 0; }
 
   /* CTA: a wide centered pill matching the real button. */
@@ -2367,9 +2374,26 @@ html[lang="ro"] .headline-gradient {
   .solution-inner { padding: 20px 24px 72px; }
 
   .solution-heading {
-    font-size: 30px;
+    font-size: 34px;
     text-align: center;
     margin-bottom: 30px;
+  }
+
+  /* The "This is what you get" part is appended to the heading on desktop only;
+     on mobile it becomes its own heading after the phone (see below). */
+  .solution-heading-extra { display: none; }
+
+  /* Mobile-only intro heading for the feature cards, sits after the phone. */
+  .solution-features-heading {
+    display: block;
+    font-family: 'Fira Sans Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 27px;
+    color: #0e2f44;
+    line-height: 1;
+    text-align: center;
+    text-wrap: balance;
+    margin: 2px 0 -4px;
   }
 
   .solution-layout {
