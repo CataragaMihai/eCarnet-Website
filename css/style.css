@@ -2001,6 +2001,7 @@ html[lang="ro"] .headline-gradient {
   .nav-drawer {
     display: flex;
     flex-direction: column;
+    justify-content: center;   /* sit the links toward the vertical middle */
     position: fixed;
     top: 0;
     right: 0;
@@ -2047,13 +2048,13 @@ html[lang="ro"] .headline-gradient {
   .nav-links {
     flex-direction: column;
     align-items: flex-start;
-    gap: 32px;
+    gap: 34px;
   }
 
-  /* Figma: Gabarito ExtraBold 20px; the active section is white, the rest
-     light blue. Padding keeps tap targets comfortable without changing look. */
+  /* Gabarito ExtraBold; the active section is white, the rest light blue.
+     Padding keeps tap targets comfortable without changing look. */
   .nav-link {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 800;
     color: #b4d0e7;
     padding: 7px 0;
@@ -2147,7 +2148,7 @@ html[lang="ro"] .headline-gradient {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    padding: 46px 24px 56px;   /* nudged down toward vertical center */
+    padding: 30px 24px 56px;   /* sit a bit higher so the CTA is above the fold */
   }
 
   .hero-text { margin-top: 0; }
@@ -2275,9 +2276,9 @@ html[lang="ro"] .headline-gradient {
     flex-direction: column;
     align-items: center;
     gap: 0;
-    /* 60px navbar + 46px hero-inner top padding = the real headline's y-offset,
+    /* 60px navbar + 30px hero-inner top padding = the real headline's y-offset,
        so the first bar lands exactly on the real headline. */
-    padding: 106px 24px 0;
+    padding: 90px 24px 0;
   }
 
   .sk-text { display: contents; }
