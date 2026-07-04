@@ -338,6 +338,11 @@ body.lang-switching {
   text-wrap: balance;
 }
 
+/* Punctuation is added in CSS so the one translated string can read as a
+   sentence on desktop (period, appended to the heading) and as a label on
+   mobile (colon, its own heading). */
+.solution-heading-extra::after { content: "."; }
+
 .solution-layout {
   display: flex;
   align-items: center;
@@ -2383,7 +2388,8 @@ html[lang="ro"] .headline-gradient {
      on mobile it becomes its own heading after the phone (see below). */
   .solution-heading-extra { display: none; }
 
-  /* Mobile-only intro heading for the feature cards, sits after the phone. */
+  /* Mobile-only intro heading for the feature cards, sits after the phone.
+     Left-aligned so it lines up with the feature cards below it. */
   .solution-features-heading {
     display: block;
     font-family: 'Fira Sans Condensed', sans-serif;
@@ -2391,10 +2397,11 @@ html[lang="ro"] .headline-gradient {
     font-size: 27px;
     color: #0e2f44;
     line-height: 1;
-    text-align: center;
+    text-align: left;
     text-wrap: balance;
     margin: 2px 0 -4px;
   }
+  .solution-features-heading::after { content: ":"; }
 
   .solution-layout {
     flex-direction: column;
