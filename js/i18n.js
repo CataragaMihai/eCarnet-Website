@@ -14,7 +14,7 @@ window.I18N = {
     "hero.headlineAccent": "acum digital!",
     "hero.sub1": "eCarnet înlocuiește actualul carnet al elevului cu o soluție digitală.",
     "hero.sub2": "Acest carnet va fi mereu cu tine, niciodată pierdut.",
-    "hero.cta": "Află mai multe!",
+    "hero.cta": "De ce?",
 
     "problem.heading": "Carnetul fizic e depășit.",
     "problem.c1.title": "Se pierde ușor",
@@ -81,7 +81,7 @@ window.I18N = {
     "hero.headlineAccent": "now digital!",
     "hero.sub1": "eCarnet replaces the paper student card with a digital one.",
     "hero.sub2": "Always with you, never lost.",
-    "hero.cta": "Learn more!",
+    "hero.cta": "Why?",
 
     "problem.heading": "The paper card is outdated.",
     "problem.c1.title": "Easy to lose",
@@ -148,7 +148,7 @@ window.I18N = {
     "hero.headlineAccent": "теперь цифровой!",
     "hero.sub1": "eCarnet заменяет бумажный билет цифровым.",
     "hero.sub2": "Всегда с тобой и никогда не потеряется.",
-    "hero.cta": "Узнать больше!",
+    "hero.cta": "Почему?",
 
     "problem.heading": "Бумажный билет устарел.",
     "problem.c1.title": "Легко потерять",

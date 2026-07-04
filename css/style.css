@@ -2009,7 +2009,8 @@ html[lang="ro"] .headline-gradient {
     z-index: 200;
     /* Figma panel is 167/318 ≈ 52.5% of the screen */
     width: clamp(200px, 52.5vw, 250px);
-    padding: 56px 28px 32px;
+    /* Extra bottom padding pulls the vertically-centered links up off dead center */
+    padding: 56px 28px 120px;
     background: #0c1f33;                       /* per Figma 112:6 */
     border-left: 0.5px solid #435c72;
     box-shadow: -18px 0 50px rgba(0, 0, 0, 0.35);
@@ -2148,7 +2149,7 @@ html[lang="ro"] .headline-gradient {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    padding: 30px 24px 56px;   /* sit a bit higher so the CTA is above the fold */
+    padding: 16px 24px 56px;   /* sit higher so the CTA is comfortably above the fold */
   }
 
   .hero-text { margin-top: 0; }
@@ -2172,7 +2173,7 @@ html[lang="ro"] .headline-gradient {
     position: relative;
     width: 200px;
     height: 200px;
-    margin: 26px auto 24px;
+    margin: 20px auto 18px;
   }
 
   /* Soft radial bloom behind the icon — the "lighting" that pulls the visual
@@ -2252,7 +2253,7 @@ html[lang="ro"] .headline-gradient {
 
   /* Wider CTA pill per Figma (~68% of the frame width). */
   .cta-btn {
-    margin-top: 40px;
+    margin-top: 30px;
     align-self: center;
     width: 70%;
     min-width: 210px;
@@ -2276,9 +2277,9 @@ html[lang="ro"] .headline-gradient {
     flex-direction: column;
     align-items: center;
     gap: 0;
-    /* 60px navbar + 30px hero-inner top padding = the real headline's y-offset,
+    /* 60px navbar + 16px hero-inner top padding = the real headline's y-offset,
        so the first bar lands exactly on the real headline. */
-    padding: 90px 24px 0;
+    padding: 76px 24px 0;
   }
 
   .sk-text { display: contents; }
@@ -2330,7 +2331,7 @@ html[lang="ro"] .headline-gradient {
     min-width: 210px;
     max-width: 300px;
     height: 46px;
-    margin-top: 40px;
+    margin-top: 30px;
     border-radius: 18px;
   }
 
