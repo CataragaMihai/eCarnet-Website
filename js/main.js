@@ -1,946 +1,633 @@
-// ============================================
-// eCarnet — Main JS
-// i18n, mobile menu, navbar state,
-// scroll reveal, active section tracking
-// ============================================
+// ── Resize dispatcher ──────────────────────────────────────────────────────
+// Every resize-driven measurement funnels through here. A window drag fires the
+// native `resize` event dozens of times a second; without this, each of the
+// page's handlers would run on every one of those events and synchronously read
+// layout (getBoundingClientRect) right after writing styles — the classic
+// read→write→read thrash that makes dragging stutter. Instead we register each
+// handler once and flush them all together, a single batched pass per animation
+// frame. Synthetic `dispatchEvent(new Event('resize'))` calls ride the same rail.
+const __resizeHandlers = [];
+let __resizeQueued = false;
+function onResize(fn) { __resizeHandlers.push(fn); }
+function requestResizeFlush() {
+  if (__resizeQueued) return;
+  __resizeQueued = true;
+  requestAnimationFrame(() => {
+    __resizeQueued = false;
+    for (let i = 0; i < __resizeHandlers.length; i++) __resizeHandlers[i]();
+  });
+}
+window.addEventListener('resize', requestResizeFlush, { passive: true });
 
+document.getElementById('cta-main').addEventListener('click', function (e) {
+  e.preventDefault();
+  document.getElementById('problema').scrollIntoView({ behavior: 'smooth' });
+});
+
+// Stagger delay for grouped animated elements
+document.querySelectorAll('.problem-grid, .features-col').forEach(group => {
+  group.querySelectorAll('.animate-in').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.12}s`;
+  });
+});
+
+// Scroll-triggered entrance animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+
+// Timeline v2: draw-on-scroll animation
+const timelineV2 = document.querySelector('.timeline-v2');
+if (timelineV2) {
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      timelineV2.classList.add('is-visible');
+    }
+  }, { threshold: 0.3 }).observe(timelineV2);
+}
+
+// Nav scroll-spy + sliding underline.
+// A single bar glides under the active link (or the hovered one, snapping back
+// to the active section on mouse-out) instead of the underline jumping.
+const navLinksWrap = document.querySelector('.nav-links');
+const navLinks = document.querySelectorAll('.nav-link');
+const linkById = new Map(
+  [...navLinks].map(link => [link.getAttribute('href').slice(1), link])
+);
+
+// The moving indicator, injected so the markup stays clean.
+const indicator = document.createElement('span');
+indicator.className = 'nav-underline';
+navLinksWrap.appendChild(indicator);
+
+let activeLink = document.querySelector('.nav-link.active') || navLinks[0];
+
+// Position the bar under a given link by measuring against the nav container.
+function moveIndicator(link) {
+  if (!link) return;
+  const wrapRect = navLinksWrap.getBoundingClientRect();
+  const linkRect = link.getBoundingClientRect();
+  indicator.style.width = `${linkRect.width}px`;
+  indicator.style.transform = `translateX(${linkRect.left - wrapRect.left}px)`;
+  indicator.classList.add('is-active');
+}
+
+// Hover-follow: track the cursor, then snap back to the active section.
+navLinks.forEach(link => {
+  link.addEventListener('mouseenter', () => moveIndicator(link));
+});
+navLinksWrap.addEventListener('mouseleave', () => moveIndicator(activeLink));
+
+const spy = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      activeLink = linkById.get(entry.target.id) || activeLink;
+      activeLink?.classList.add('active');
+      // Don't yank the bar away while the user is hovering the nav.
+      if (!navLinksWrap.matches(':hover')) moveIndicator(activeLink);
+    }
+  });
+}, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+
+linkById.forEach((_link, id) => {
+  const section = document.getElementById(id);
+  if (section) spy.observe(section);
+});
+
+// Place the bar on load (after fonts settle) and keep it aligned on resize.
+window.addEventListener('load', () => moveIndicator(activeLink));
+moveIndicator(activeLink);
+onResize(() => moveIndicator(activeLink));
+
+// Language switcher: a blue pill slides to the hovered button and rests on the
+// active one — same feel as the nav underline. (Actual language switching isn't
+// wired up yet; this is just the indicator motion.)
+const langSwitcher = document.querySelector('.lang-switcher');
+if (langSwitcher) {
+  const langBtns = langSwitcher.querySelectorAll('.lang-btn');
+  const langIndicator = document.createElement('span');
+  langIndicator.className = 'lang-indicator';
+  langSwitcher.insertBefore(langIndicator, langSwitcher.firstChild);
+
+  let activeBtn = langSwitcher.querySelector('.lang-btn.active') || langBtns[0];
+
+  function moveLang(btn) {
+    if (!btn) return;
+    const wrap = langSwitcher.getBoundingClientRect();
+    const r = btn.getBoundingClientRect();
+    langIndicator.style.width = `${r.width}px`;
+    langIndicator.style.transform = `translateX(${r.left - wrap.left}px)`;
+  }
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function applyAndRefit(lang) {
+    if (window.applyLanguage) window.applyLanguage(lang);
+    // Text widths changed — let the nav underline (and other measurers) re-fit.
+    window.dispatchEvent(new Event('resize'));
+  }
+
+  function selectLang(btn) {
+    if (!btn) return;
+    langBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeBtn = btn;
+    moveLang(btn); // pill slides immediately so the control stays responsive
+
+    if (reduceMotion) {
+      applyAndRefit(btn.dataset.lang);
+      return;
+    }
+    // Refocus: page fades + blurs + scales out, text swaps while invisible,
+    // then sharpens back in.
+    document.body.classList.add('lang-switching');
+    setTimeout(() => {
+      applyAndRefit(btn.dataset.lang);
+      document.body.classList.remove('lang-switching');
+    }, 160);
+  }
+
+  // Hover previews the pill; clicking switches language.
+  langBtns.forEach(btn => {
+    btn.addEventListener('mouseenter', () => moveLang(btn));
+    btn.addEventListener('click', () => selectLang(btn));
+  });
+  langSwitcher.addEventListener('mouseleave', () => moveLang(activeBtn));
+
+  // Restore the saved language (default Romanian), then place the pill.
+  let savedLang = 'ro';
+  try { savedLang = localStorage.getItem('ecarnet-lang') || 'ro'; } catch (e) {}
+  const savedBtn = langSwitcher.querySelector('.lang-btn[data-lang="' + savedLang + '"]') || activeBtn;
+  langBtns.forEach(b => b.classList.remove('active'));
+  savedBtn.classList.add('active');
+  activeBtn = savedBtn;
+  if (window.applyLanguage) window.applyLanguage(savedLang);
+
+  window.addEventListener('load', () => moveLang(activeBtn));
+  moveLang(activeBtn);
+  onResize(() => moveLang(activeBtn));
+}
+
+// Brand collapse: shrink "eCarnet" to the capped-e once the SECOND section
+// (the problem section) reaches the top of the viewport — not right after
+// leaving the hero. Reverts when you scroll back up into the hero. rAF-throttled.
+const navbar = document.querySelector('.navbar');
+if (navbar) {
+  let navTicking = false;
+  const collapseAt = document.getElementById('problema');
+
+  function updateBrand() {
+    // Collapse once the problem section's top crosses just under the navbar,
+    // and stay collapsed for everything below it.
+    const collapse = collapseAt
+      ? collapseAt.getBoundingClientRect().top <= 80
+      : window.scrollY > window.innerHeight * 0.6;
+    navbar.classList.toggle('scrolled', collapse);
+    navTicking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!navTicking) {
+      navTicking = true;
+      requestAnimationFrame(updateBrand);
+    }
+  }, { passive: true });
+
+  updateBrand();
+}
+
+// Hide scroll indicator on first scroll
+window.addEventListener('scroll', function hideScroll() {
+  document.querySelector('.scroll-indicator')?.classList.add('hidden');
+  window.removeEventListener('scroll', hideScroll);
+});
+
+// Solution icon: drag the icon; the ring trails after it magnetically.
+// The icon tracks the pointer immediately on its own layer (.icon-magnet) and
+// springs home on release. The ring (.ring-magnet) eases toward the icon's
+// target each frame, so it lags slightly — barely there, but felt. Both layers
+// sit inside the scroll-animated orbit, so they keep its scroll drift.
+const orbit = document.querySelector('.solution-orbit');
+const iconMagnet = document.querySelector('.icon-magnet');
+const ringMagnet = document.querySelector('.ring-magnet');
+const dragHandle = document.querySelector('.solution-icon');
+
+if (orbit && iconMagnet && ringMagnet && dragHandle) {
+  let dragging = false;
+  let startX = 0, startY = 0;
+  let targetX = 0, targetY = 0;   // where the icon is (pointer offset, or 0 at rest)
+  let ringX = 0, ringY = 0;       // ring's lagged position
+  let rafId = null;
+
+  const LAG = 0.2;                 // lower = more trail; 0.2 reads as "barely there"
+
+  function tick() {
+    ringX += (targetX - ringX) * LAG;
+    ringY += (targetY - ringY) * LAG;
+
+    if (Math.abs(targetX - ringX) < 0.1 && Math.abs(targetY - ringY) < 0.1) {
+      ringX = targetX; ringY = targetY;        // snap to rest, stop the loop
+      ringMagnet.style.transform = `translate(${ringX}px, ${ringY}px)`;
+      rafId = null;
+      return;
+    }
+    ringMagnet.style.transform = `translate(${ringX}px, ${ringY}px)`;
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function ensureTick() { if (rafId == null) rafId = requestAnimationFrame(tick); }
+
+  dragHandle.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    iconMagnet.style.transition = 'none';
+    orbit.classList.add('dragging');
+    dragHandle.setPointerCapture(e.pointerId);
+  });
+
+  dragHandle.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    targetX = e.clientX - startX;
+    targetY = e.clientY - startY;
+    iconMagnet.style.transform = `translate(${targetX}px, ${targetY}px)`;
+    ensureTick();
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    orbit.classList.remove('dragging');
+    targetX = 0; targetY = 0;
+    // Icon springs home; the ring keeps trailing toward home via the rAF loop.
+    iconMagnet.style.transition = 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    iconMagnet.style.transform = 'translate(0px, 0px)';
+    ensureTick();
+    try { dragHandle.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+
+  dragHandle.addEventListener('pointerup', endDrag);
+  dragHandle.addEventListener('pointercancel', endDrag);
+}
+
+// Problem cards: cursor spotlight. Feed the pointer position into CSS vars so
+// the ::before glow tracks the mouse. rAF-throttled to one write per frame.
+document.querySelectorAll('.problem-card').forEach(card => {
+  let frame = null;
+
+  card.addEventListener('mousemove', (e) => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
+      frame = null;
+    });
+  });
+});
+
+// Dev business card: opens on hover/focus and stays pinned so you can use it.
+// Traffic lights behave like macOS — red closes, yellow genie-minimizes into the
+// name, green zooms to 1.5×.
+const devWrap = document.querySelector('.dev-card-wrap');
+const devCard = document.querySelector('.dev-card');
+if (devWrap && devCard) {
+  let hideTimer = null;
+  const open  = () => { clearTimeout(hideTimer); devCard.classList.add('is-open'); };
+  const close = () => devCard.classList.remove('is-open', 'is-max', 'is-minimizing');
+  // Small delay so the cursor can cross the gap between the name and the card
+  // without it closing; landing on either cancels the timer.
+  const scheduleClose = () => { clearTimeout(hideTimer); hideTimer = setTimeout(close, 140); };
+
+  // Stay up while hovering the name OR the window; close once the cursor leaves both.
+  devWrap.addEventListener('mouseenter', open);
+  devWrap.addEventListener('mouseleave', scheduleClose);
+  devWrap.addEventListener('focusin', open);
+  devWrap.addEventListener('focusout', scheduleClose);
+
+  devCard.querySelector('.dev-dot-red').addEventListener('click', close);
+
+  devCard.querySelector('.dev-dot-green').addEventListener('click', () => {
+    devCard.classList.toggle('is-max');
+  });
+
+  devCard.querySelector('.dev-dot-yellow').addEventListener('click', () => {
+    devCard.classList.remove('is-max');
+    devCard.classList.add('is-minimizing');
+  });
+
+  // Hide once the minimize animation finishes.
+  devCard.addEventListener('animationend', (e) => {
+    if (e.animationName === 'dev-minimize') close();
+  });
+}
+
+// ============================================
+// Mobile nav drawer (hamburger). The drawer reuses the desktop .nav-links and
+// .lang-switcher elements, so scroll-spy, i18n and the lang pill keep working.
+// ============================================
 (function () {
-  "use strict";
+  var toggle   = document.getElementById('nav-toggle');
+  var drawer   = document.getElementById('nav-drawer');
+  var overlay  = document.getElementById('nav-overlay');
+  var closeBtn = document.getElementById('nav-drawer-close');
+  if (!toggle || !drawer || !overlay || !closeBtn) return;
 
-  // ============================================
-  // EmailJS — init as early as possible
-  // ============================================
+  function isOpen() { return document.body.classList.contains('drawer-open'); }
+
+  function setOpen(open) {
+    document.body.classList.toggle('drawer-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // The lang pill measures rects; re-measure now that the drawer is visible.
+    if (open) window.dispatchEvent(new Event('resize'));
+  }
+
+  toggle.addEventListener('click', function () { setOpen(!isOpen()); });
+  closeBtn.addEventListener('click', function () { setOpen(false); });
+  overlay.addEventListener('click', function () { setOpen(false); });
+
+  // Tapping a section link should close the drawer and let the page scroll.
+  drawer.querySelectorAll('.nav-link').forEach(function (link) {
+    link.addEventListener('click', function () { setOpen(false); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isOpen()) { setOpen(false); toggle.focus(); }
+  });
+
+  // Growing past the mobile breakpoint must never leave the page scroll-locked.
+  onResize(function () {
+    if (window.innerWidth > 768 && isOpen()) setOpen(false);
+  });
+})();
+
+// ============================================
+// Floating "E" — draggable email-capture button.
+// Hidden over the hero, pops in from the corner once you scroll past it.
+// Draggable with magnetic corner-snap; hover/tap opens a signup card that sends
+// the email to me via EmailJS.
+// ============================================
+(function () {
   var EMAILJS_PUBLIC_KEY  = "JcHMwo9MQ774aS1ec";
   var EMAILJS_SERVICE_ID  = "service_ovj1n8b";
   var EMAILJS_TEMPLATE_ID = "template_6en3rbs";
 
-  function initEmailJS() {
-    try {
-      emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-    } catch (e) {
-      console.warn("EmailJS init failed:", e);
-    }
-  }
-
   if (typeof emailjs !== "undefined") {
-    initEmailJS();
-  } else {
-    window.addEventListener("load", function () {
-      if (typeof emailjs !== "undefined") initEmailJS();
-    });
+    try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); }
+    catch (err) { console.warn("EmailJS init failed:", err); }
   }
 
-  // ============================================
-  // I18N — Translations
-  // ============================================
+  var floatingE = document.getElementById("floating-e");
+  var trigger   = document.getElementById("floating-e-trigger");
+  var hero      = document.getElementById("acasa");
+  if (!floatingE || !trigger || !hero) return;
 
-  var translations = {
-    ro: {
-      "nav.home":    "Acasă",
-      "nav.problem": "Problema",
-      "nav.solution":"Soluția",
-      "nav.roadmap": "Progres",
-      "nav.contact": "Mesaj",
+  var emailInput = document.getElementById("capture-email");
 
-      "hero.title":    "eCarnet este carnetul tău <span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">digital</span></span>",
-      "hero.subtitle": "eCarnet înlocuiește carnetul fizic cu o soluție digitală. Mereu cu tine, niciodată pierdut.",
-      "hero.cta":      "Vezi cum funcționează",
+  // Keep the card open while the email field is focused or has text typed —
+  // don't let hover-out or scroll yank it away mid-typing.
+  function keepOpen() {
+    return !!emailInput && (document.activeElement === emailInput || emailInput.value.trim() !== "");
+  }
 
-      "problem.eyebrow":  "Problema",
-      "problem.title":    "Carnetul fizic este învechit.",
-      "problem.subtitle": "Zeci de mii de elevi și studenți din Moldova se confruntă zilnic cu aceleași neajunsuri.",
-      "problem.1.title":  "Se pierde ușor",
-      "problem.1.text":   "Carnetul fizic poate fi uitat acasă sau pierdut, tocmai când ai nevoie de el.",
-      "problem.2.title":  "Expiră",
-      "problem.2.text":   "Anual, carnetul expiră și trebuie reînnoit, iar mereu uiți să o faci. Timp pierdut, bani cheltuiți.",
-      "problem.3.title":  "Birocrație inutilă",
-      "problem.3.text":   "Ștampile, semnături, hârtii. Un proces depășit.",
-      "problem.4.title":  "O hârtie simplă",
-      "problem.4.text":   "Nu arată notele, absențele sau orarul tău. E doar o hârtie.",
-      "problem.5.title":  "Cheltuială",
-      "problem.5.text":   "De fiecare dată când îți faci un carnet nou, sau când îl pierzi, sau când îl reînoiești, achiți bani. În decursul anilor, aceste cheltuieli se adună.",
+  var isTouch = window.matchMedia("(hover: none)").matches;
 
-      "solution.eyebrow":  "Soluția",
-      "solution.title":    "Același carnet. Acum digital.",
-      "solution.subtitle": "eCarnet este o aplicație mobilă care aduce carnetul de elev sau student în telefon, simplu, sigur, modern.",
-      "solution.f1.title": "Identitate digitală verificabilă",
-      "solution.f1.text":  "Arăți telefonul și gata. Funcționează oriunde ai nevoie să dovedești că ești elev sau student.",
-      "solution.f2.title": "Note și absențe",
-      "solution.f2.text":  "Catalogul electronic la îndemână. Note, medii, absențe, totul într-un singur loc.",
-      "solution.f3.title": "Orar și notițe",
-      "solution.f3.text":  "Orarul zilei, teme, notițe personale. O agendă care ține totul la un loc.",
-
-      "roadmap.eyebrow":   "Unde suntem",
-      "roadmap.title":     "Parcursul eCarnet.",
-      "roadmap.subtitle":  "eCarnet încă nu e gata. Iată unde suntem și unde vrem să ajungem.",
-      "roadmap.s1.badge":  "Acum",
-      "roadmap.s1.title":  "Concept și design",
-      "roadmap.s1.text":   "Definim structura aplicației, modul de utilizare și designul vizual.",
-      "roadmap.s2.badge":  "Urmează",
-      "roadmap.s2.title":  "Prototip funcțional",
-      "roadmap.s2.text":   "Prima versiune funcțională a aplicației mobile, testată intern cu un set limitat de utilizatori.",
-      "roadmap.s3.badge":  "Viitor",
-      "roadmap.s3.title":  "Pilot cu o instituție",
-      "roadmap.s3.text":   "Colaborare cu o școală din Chișinău pentru un test real în condiții reale.",
-      "roadmap.s4.badge":  "Viitor",
-      "roadmap.s4.title":  "Rafinare și securitate",
-      "roadmap.s4.text":   "Îmbunătățiri bazate pe feedback real. Audit de securitate, sistem de validare digitală.",
-      "roadmap.s5.badge":  "Viitor",
-      "roadmap.s5.title":  "Lansare publică",
-      "roadmap.s5.text":   "Disponibil pe iOS și Android. Pregătit pentru adoptare la scară instituțională în Moldova.",
-      "roadmap.open":      "Proiectul este open-source.",
-      "roadmap.gh":        "Urmărește procesul pe GitHub",
-
-      "footer.tagline": "Pentru elevii și studenții din Moldova.",
-      "footer.contact": "Contactează-mă",
-
-      "capture.heading":     "Vrei să fii la curent cu progresul eCarnet?",
-      "capture.placeholder": "email@tău.com",
-      "capture.cta":         "Notifică-mă",
-      "capture.thanks":      "Mulțumesc! Te anunț la lansare."
-    },
-
-    en: {
-      "nav.home":    "Home",
-      "nav.problem": "Problem",
-      "nav.solution":"Solution",
-      "nav.roadmap": "Progress",
-      "nav.contact": "Message",
-
-      "hero.tag":      "What is eCarnet?",
-      "hero.title":    "eCarnet is your <span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">digital</span></span> student ID",
-      "hero.subtitle": "eCarnet replaces the paper student card with a digital solution.",
-      "hero.cta":      "Learn more",
-
-      "problem.eyebrow":  "The Problem",
-      "problem.title":    "The physical student card isn't keeping up.",
-      "problem.subtitle": "Tens of thousands of students in Moldova face the same daily frustrations.",
-      "problem.1.title":  "Easy to lose",
-      "problem.1.text":   "The physical card can be left at home or lost — exactly when you need it most.",
-      "problem.2.title":  "Expires every year",
-      "problem.2.text":   "Paper wears out. Every new school year, it must be renewed. Time lost, money spent.",
-      "problem.3.title":  "Unnecessary bureaucracy",
-      "problem.3.text":   "Stamps, signatures, forms. An outdated process that wastes everyone's time.",
-      "problem.4.title":  "Just a piece of paper",
-      "problem.4.text":   "It doesn't show your grades, absences, or schedule. It's just a card.",
-      "problem.5.title":  "A recurring cost",
-      "problem.5.text":   "Every time you get a new card, lose it, or renew it — you pay. Over the years, it adds up.",
-
-      "solution.eyebrow":  "The Solution",
-      "solution.title":    "Same card. Now digital.",
-      "solution.subtitle": "eCarnet is a mobile app that brings the student ID to your phone — simple, secure, modern.",
-      "solution.f1.title": "Verifiable digital identity",
-      "solution.f1.text":  "Show your phone and done. Works anywhere you need to prove you're a student.",
-      "solution.f2.title": "Grades and attendance",
-      "solution.f2.text":  "Your digital gradebook, at hand. Grades, averages, absences — all in one place.",
-      "solution.f3.title": "Schedule and notes",
-      "solution.f3.text":  "Today's schedule, homework, personal notes. A planner that keeps everything together.",
-
-      "roadmap.eyebrow":   "Where We Are",
-      "roadmap.title":     "A serious project, at the concept stage.",
-      "roadmap.subtitle":  "eCarnet doesn't pretend to be finished. Here's where we are and where we're headed.",
-      "roadmap.s1.badge":  "Now",
-      "roadmap.s1.title":  "Concept & Design",
-      "roadmap.s1.text":   "Defining the app architecture, user flows, visual design, and product strategy.",
-      "roadmap.s2.badge":  "Next",
-      "roadmap.s2.title":  "Functional Prototype",
-      "roadmap.s2.text":   "First working version of the mobile app, tested internally with a small group of users.",
-      "roadmap.s3.badge":  "Future",
-      "roadmap.s3.title":  "Pilot with an institution",
-      "roadmap.s3.text":   "Collaboration with a school or university in Chișinău for a real-world test.",
-      "roadmap.s4.badge":  "Future",
-      "roadmap.s4.title":  "Refinement & Security",
-      "roadmap.s4.text":   "Improvements based on real feedback. Security audit, digital validation system.",
-      "roadmap.s5.badge":  "Future",
-      "roadmap.s5.title":  "Public Launch",
-      "roadmap.s5.text":   "Available on iOS and Android. Ready for institutional adoption across Moldova.",
-      "roadmap.open":      "The project is open-source.",
-      "roadmap.gh":        "Follow the process on GitHub",
-
-      "footer.tagline": "For students across Moldova.",
-      "footer.contact": "Contact me",
-
-      "capture.heading":     "Want to stay updated on eCarnet's progress?",
-      "capture.placeholder": "your@email.com",
-      "capture.cta":         "Notify me",
-      "capture.thanks":      "Thanks! I'll let you know at launch."
-    },
-
-    ru: {
-      "nav.home":    "Главная",
-      "nav.problem": "Проблема",
-      "nav.solution":"Решение",
-      "nav.roadmap": "Прогресс",
-      "nav.contact": "Сообщение",
-
-      "hero.tag":      "Что такое eCarnet?",
-      "hero.title":    "eCarnet — твоя <span class=\"hero-title-glow-wrap\"><span class=\"hero-title-accent\">электронная</span></span> студенческая книжка",
-      "hero.subtitle": "eCarnet заменяет бумажную студенческую книжку цифровым решением.",
-      "hero.cta":      "Узнать больше",
-
-      "problem.eyebrow":  "Проблема",
-      "problem.title":    "Бумажный дневник устарел.",
-      "problem.subtitle": "Десятки тысяч учеников и студентов Молдовы сталкиваются с одними и теми же неудобствами каждый день.",
-      "problem.1.title":  "Легко потерять",
-      "problem.1.text":   "Дневник можно забыть дома или потерять — именно тогда, когда он нужен.",
-      "problem.2.title":  "Истекает каждый год",
-      "problem.2.text":   "Бумага изнашивается. Каждый учебный год нужно обновлять. Время и деньги потеряны.",
-      "problem.3.title":  "Лишняя бюрократия",
-      "problem.3.text":   "Печати, подписи, бланки. Устаревший процесс, который отнимает время у всех.",
-      "problem.4.title":  "Просто бумага",
-      "problem.4.text":   "Не показывает оценки, пропуски или расписание. Это изолированный объект.",
-      "problem.5.title":  "Постоянные расходы",
-      "problem.5.text":   "Каждый раз, когда делаешь новый дневник, теряешь или обновляешь его — платишь. Со временем это накапливается.",
-
-      "solution.eyebrow":  "Решение",
-      "solution.title":    "Тот же билет. Теперь цифровой.",
-      "solution.subtitle": "eCarnet — мобильное приложение, которое переносит студенческий билет в телефон — просто, безопасно, современно.",
-      "solution.f1.title": "Проверяемая цифровая личность",
-      "solution.f1.text":  "Показываешь телефон — и готово. Работает везде, где нужно подтвердить статус ученика.",
-      "solution.f2.title": "Оценки и посещаемость",
-      "solution.f2.text":  "Электронный журнал под рукой. Оценки, средний балл, пропуски — всё в одном месте.",
-      "solution.f3.title": "Расписание и заметки",
-      "solution.f3.text":  "Расписание на день, домашние задания, личные заметки. Всё в одном месте.",
-
-      "roadmap.eyebrow":   "Где мы сейчас",
-      "roadmap.title":     "Серьёзный проект на концептуальной стадии.",
-      "roadmap.subtitle":  "eCarnet не делает вид, что готов. Вот где мы находимся и куда движемся.",
-      "roadmap.s1.badge":  "Сейчас",
-      "roadmap.s1.title":  "Концепция и дизайн",
-      "roadmap.s1.text":   "Определяем архитектуру приложения, пользовательские потоки, визуальный дизайн и стратегию продукта.",
-      "roadmap.s2.badge":  "Далее",
-      "roadmap.s2.title":  "Функциональный прототип",
-      "roadmap.s2.text":   "Первая рабочая версия мобильного приложения, протестированная внутри с небольшой группой пользователей.",
-      "roadmap.s3.badge":  "Будущее",
-      "roadmap.s3.title":  "Пилот с учреждением",
-      "roadmap.s3.text":   "Сотрудничество со школой или университетом в Кишинёве для реального тестирования.",
-      "roadmap.s4.badge":  "Будущее",
-      "roadmap.s4.title":  "Доработка и безопасность",
-      "roadmap.s4.text":   "Улучшения на основе реальной обратной связи. Аудит безопасности, система верификации.",
-      "roadmap.s5.badge":  "Будущее",
-      "roadmap.s5.title":  "Публичный запуск",
-      "roadmap.s5.text":   "Доступно на iOS и Android. Готово к масштабному внедрению в учреждениях Молдовы.",
-      "roadmap.open":      "Проект с открытым исходным кодом.",
-      "roadmap.gh":        "Следить за процессом на GitHub",
-
-      "footer.tagline": "Для учеников и студентов Молдовы.",
-      "footer.contact": "Написать мне",
-
-      "capture.heading":     "Хочешь следить за прогрессом eCarnet?",
-      "capture.placeholder": "твой@email.com",
-      "capture.cta":         "Уведомить меня",
-      "capture.thanks":      "Спасибо! Сообщу о запуске."
+  var SIZE = 60;
+  var footer = document.querySelector('.site-footer');
+  function margin() { return window.innerWidth < 768 ? 16 : 24; }
+  // Bottom resting edge for the button. Normally a margin above the viewport
+  // bottom, but once the footer scrolls into view the button rises to sit a
+  // margin ABOVE the footer's top edge instead of covering its links.
+  function bottomY() {
+    var base = window.innerHeight - SIZE - margin();
+    if (!footer) return base;
+    var footerTop = footer.getBoundingClientRect().top;
+    return Math.min(base, footerTop - SIZE - margin());
+  }
+  function corner() {
+    return { x: window.innerWidth - SIZE - margin(), y: bottomY() };
+  }
+  function anchors() {
+    var vW = window.innerWidth, m = margin();
+    return [
+      { x: vW - SIZE - m, y: bottomY() }     // bottom-right (the only anchor)
+    ];
+  }
+  function nearest(x, y) {
+    var a = anchors(), best = a[0], bd = Infinity;
+    for (var i = 0; i < a.length; i++) {
+      var d = (x - a[i].x) * (x - a[i].x) + (y - a[i].y) * (y - a[i].y);
+      if (d < bd) { bd = d; best = a[i]; }
     }
-  };
+    return best;
+  }
 
-  var currentLang = localStorage.getItem("ecarnet-lang") || "ro";
+  var dragging = false, wasDragged = false, visible = false, isOpen = false;
+  var startX = 0, startY = 0, offX = 0, offY = 0, curX = 0, curY = 0;
 
-  var mockupSrcs = {
-    ro: "assets/mockup.png",
-    en: "assets/mockup-english.png",
-    ru: "assets/mockup russian.png"
-  };
+  function setPos(x, y, animate) {
+    curX = x; curY = y;
+    floatingE.classList.toggle("snapping", !!animate);
+    floatingE.style.transform = "translate(" + x + "px, " + y + "px)";
+  }
+  function updateSide() {
+    floatingE.classList.toggle("menu-flip", curX < window.innerWidth / 2);
+  }
+  floatingE.addEventListener("transitionend", function (e) {
+    if (e.propertyName === "transform") floatingE.classList.remove("snapping", "reanchoring");
+  });
 
-  // Label order matches DOM order of .hero-shortcut-item
-  var navLabelKeys = ["nav.home", "nav.problem", "nav.solution", "nav.roadmap", "nav.contact"];
+  function openMenu()  { isOpen = true;  floatingE.classList.add("is-open"); syncCapture(); }
+  function closeMenu() { isOpen = false; floatingE.classList.remove("is-open"); }
 
-  function applyTranslations(lang) {
-    if (!translations[lang]) return;
-    var t = translations[lang];
-
-    document.querySelectorAll("[data-i18n]").forEach(function (el) {
-      var key = el.getAttribute("data-i18n");
-      if (t[key] !== undefined) el.textContent = t[key];
-    });
-
-    document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
-      var key = el.getAttribute("data-i18n-html");
-      if (t[key] !== undefined) el.innerHTML = t[key];
-    });
-
-    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
-      var key = el.getAttribute("data-i18n-placeholder");
-      if (t[key] !== undefined) el.placeholder = t[key];
-    });
-
-    document.documentElement.lang = lang;
-
-    document.querySelectorAll(".lang-btn").forEach(function (btn) {
-      btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
-    });
-
-    // Update hero shortcut item tooltips
-    document.querySelectorAll(".hero-shortcut-item").forEach(function (item, i) {
-      var key = navLabelKeys[i];
-      if (key && t[key]) item.setAttribute("data-label", t[key]);
-    });
-
-    // Switch mockup image
-    var mockupImg = document.querySelector(".solution-visual img");
-    if (mockupImg) {
-      mockupImg.src = mockupSrcs[lang] || mockupSrcs.ro;
+  function update() {
+    if (dragging) return;
+    var hide = hero.getBoundingClientRect().bottom > window.innerHeight * 0.6;
+    var c = corner();
+    if (hide) {
+      if (visible) {
+        visible = false;
+        closeMenu();
+        floatingE.classList.add("snapping");
+        floatingE.style.opacity = "0";
+        floatingE.style.transform = "translate(" + c.x + "px," + c.y + "px) scale(0.4)";
+        setTimeout(function () { floatingE.classList.remove("snapping"); }, 450);
+      } else {
+        floatingE.style.opacity = "0";
+        floatingE.style.transform = "translate(" + c.x + "px," + c.y + "px) scale(0)";
+        curX = c.x; curY = c.y;
+      }
+      return;
     }
-
-    currentLang = lang;
-    localStorage.setItem("ecarnet-lang", lang);
-  }
-
-  document.querySelectorAll(".lang-btn").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var lang = btn.getAttribute("data-lang");
-      if (lang !== currentLang) applyTranslations(lang);
-    });
-  });
-
-  applyTranslations(currentLang);
-
-  // ============================================
-  // DOM refs
-  // ============================================
-  var navbar      = document.querySelector(".navbar");
-  var hamburger   = document.querySelector(".hamburger");
-  var navLinks    = document.querySelector(".nav-links");
-  var overlay     = document.querySelector(".mobile-overlay");
-  var allNavLinks = document.querySelectorAll(".nav-link");
-  var sections    = document.querySelectorAll("section[id]");
-
-  // ---- Mobile Menu ----
-  function openMenu() {
-    hamburger.classList.add("open");
-    navLinks.classList.add("open");
-    overlay.classList.add("open");
-    document.body.style.overflow = "hidden";
-    hamburger.setAttribute("aria-expanded", "true");
-    hamburger.setAttribute("aria-label", "Închide meniu");
-  }
-
-  function closeMenu() {
-    hamburger.classList.remove("open");
-    navLinks.classList.remove("open");
-    overlay.classList.remove("open");
-    document.body.style.overflow = "";
-    hamburger.setAttribute("aria-expanded", "false");
-    hamburger.setAttribute("aria-label", "Deschide meniu");
-  }
-
-  if (hamburger) {
-    hamburger.addEventListener("click", function (e) {
-      e.stopPropagation();
-      if (navLinks.classList.contains("open")) closeMenu();
-      else openMenu();
-    });
-  }
-
-  if (overlay) overlay.addEventListener("click", closeMenu);
-
-  allNavLinks.forEach(function (link) {
-    link.addEventListener("click", function () {
-      if (navLinks.classList.contains("open")) closeMenu();
-    });
-  });
-
-  document.querySelectorAll('a[href^="#"]').forEach(function (link) {
-    link.addEventListener("click", function () {
-      setTimeout(function () {
-        history.replaceState(null, "", window.location.pathname);
-      }, 50);
-    });
-  });
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && navLinks && navLinks.classList.contains("open")) closeMenu();
-  });
-
-  // ---- Navbar: light-section detection ----
-  var isMobile    = window.matchMedia("(max-width: 767px)");
-  var lightSections = document.querySelectorAll(".solution-section");
-  var navHeight   = 64;
-  var lightTicking = false;
-
-  function checkNavbarLight() {
-    lightTicking = false;
-    if (isMobile.matches) { navbar.classList.remove("is-light-section"); return; }
-    var anyLight = false;
-    lightSections.forEach(function (s) {
-      var rect = s.getBoundingClientRect();
-      if (rect.top < navHeight && rect.bottom > navHeight) anyLight = true;
-    });
-    navbar.classList.toggle("is-light-section", anyLight);
-  }
-
-  window.addEventListener("scroll", function () {
-    if (!lightTicking) { lightTicking = true; requestAnimationFrame(checkNavbarLight); }
-  }, { passive: true });
-
-  checkNavbarLight();
-  isMobile.addEventListener("change", checkNavbarLight);
-
-  // ---- Active nav link ----
-  var navObserver = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          var id = entry.target.id;
-          allNavLinks.forEach(function (link) {
-            link.classList.toggle("active", link.getAttribute("href") === "#" + id);
-          });
-        }
+    if (!visible) {
+      visible = true;
+      floatingE.classList.remove("snapping");
+      floatingE.style.opacity = "0";
+      floatingE.style.transform = "translate(" + c.x + "px," + c.y + "px) scale(0)";
+      curX = c.x; curY = c.y;
+      void floatingE.offsetWidth; // commit start state
+      requestAnimationFrame(function () {
+        floatingE.classList.add("snapping");
+        floatingE.style.opacity = "1";
+        floatingE.style.transform = "translate(" + c.x + "px," + c.y + "px) scale(1)";
+        updateSide();
       });
-    },
-    { threshold: 0.2, rootMargin: "-60px 0px 0px 0px" }
-  );
+    } else if (!isOpen) {
+      // Re-assert the resting corner every scroll frame so the button rides up
+      // smoothly as the footer enters view (bottomY tracks it) and eases back
+      // down as it leaves. Skipped while the menu is open so it can't drift
+      // out from under the cursor mid-interaction.
+      var c2 = corner();
+      if (c2.x !== curX || c2.y !== curY) setPos(c2.x, c2.y, false);
+      updateSide();
+    }
+  }
 
-  sections.forEach(function (sec) { navObserver.observe(sec); });
-
-  // ---- Scroll-reveal animations ----
-  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  var revealElements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
-
-  if (prefersReducedMotion) {
-    revealElements.forEach(function (el) { el.classList.add("visible"); });
-  } else {
-    var revealObserver = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            revealObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.07, rootMargin: "0px 0px -40px 0px" }
+  function dragStart(cx, cy) {
+    dragging = true; wasDragged = false;
+    floatingE.classList.remove("snapping");
+    startX = cx; startY = cy; offX = cx - curX; offY = cy - curY;
+    trigger.style.cursor = "grabbing";
+  }
+  function dragMove(cx, cy) {
+    if (!dragging) return;
+    if (Math.abs(cx - startX) > 4 || Math.abs(cy - startY) > 4) wasDragged = true;
+    setPos(
+      Math.max(0, Math.min(window.innerWidth  - SIZE, cx - offX)),
+      Math.max(0, Math.min(window.innerHeight - SIZE, cy - offY)),
+      false
     );
-    revealElements.forEach(function (el) { revealObserver.observe(el); });
+  }
+  function dragEnd() {
+    if (!dragging) return;
+    dragging = false;
+    trigger.style.cursor = "";
+    var a = nearest(curX, curY);
+    setPos(a.x, a.y, true);
+    updateSide();
   }
 
-  // ---- Keyboard navigation mode ----
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Tab") document.body.classList.add("keyboard-nav");
-  });
-  document.addEventListener("mousedown", function () {
-    document.body.classList.remove("keyboard-nav");
-  });
+  trigger.addEventListener("mousedown", function (e) { e.preventDefault(); dragStart(e.clientX, e.clientY); });
+  document.addEventListener("mousemove", function (e) { if (dragging) dragMove(e.clientX, e.clientY); });
+  document.addEventListener("mouseup", dragEnd);
+  trigger.addEventListener("touchstart", function (e) { dragStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  document.addEventListener("touchmove", function (e) { if (dragging) dragMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  document.addEventListener("touchend", dragEnd);
 
-  // ============================================
-  // CINEMATIC EFFECTS
-  // ============================================
-
-  var isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-
-  // ---- Scroll Progress Bar ----
-  var scrollProgress = document.querySelector(".scroll-progress");
-
-  if (scrollProgress && !prefersReducedMotion) {
-    var progressTicking = false;
-    window.addEventListener("scroll", function () {
-      if (!progressTicking) {
-        progressTicking = true;
-        requestAnimationFrame(function () {
-          var docHeight = document.documentElement.scrollHeight - window.innerHeight;
-          var pct = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
-          scrollProgress.style.width = pct + "%";
-          progressTicking = false;
-        });
-      }
-    }, { passive: true });
+  var ticking = false;
+  window.addEventListener("scroll", function () {
+    if (isOpen && !keepOpen()) closeMenu();
+    if (!ticking) { ticking = true; requestAnimationFrame(function () { update(); ticking = false; }); }
+  }, { passive: true });
+  // Resize / zoom: force a clean, authoritative state instead of trusting the
+  // stale pixel position. Either hidden (hero genuinely in view) or snapped to
+  // the nearest bottom corner, fully visible. Kills all the zoom edge cases.
+  function reanchor() {
+    if (dragging) return;
+    var c = corner();
+    var heroInView = hero.getBoundingClientRect().bottom > window.innerHeight * 0.6;
+    if (heroInView) {
+      visible = false;
+      closeMenu();
+      floatingE.classList.remove("snapping", "reanchoring");
+      floatingE.style.opacity = "0";
+      floatingE.style.transform = "translate(" + c.x + "px," + c.y + "px) scale(0)";
+      curX = c.x; curY = c.y;
+      return;
+    }
+    visible = true;
+    var a = nearest(curX, curY);
+    curX = a.x; curY = a.y;
+    floatingE.classList.remove("snapping");
+    floatingE.classList.add("reanchoring");
+    floatingE.style.opacity = "1";
+    floatingE.style.transform = "translate(" + a.x + "px," + a.y + "px) scale(1)";
+    updateSide();
   }
 
-  // ---- Hero Entrance Trigger ----
-  var heroEntrances = document.querySelectorAll(".hero-entrance");
+  // Resize, page zoom and pinch all just re-anchor the button to its corner.
+  // (An earlier version hid the button while it thought the page was zoomed,
+  // but that detection could misfire on a plain window drag and leave the
+  // button stuck-hidden until a refresh.) reanchor() already no-ops mid-drag.
+  onResize(reanchor);
+  // Pinch-zoom fires on visualViewport, not window — route it through the same
+  // per-frame flush so it batches with every other resize handler.
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", requestResizeFlush);
+    window.visualViewport.addEventListener("scroll", requestResizeFlush);
+  }
+  update();
 
-  if (heroEntrances.length && !prefersReducedMotion) {
-    setTimeout(function () {
-      heroEntrances.forEach(function (el) { el.classList.add("visible"); });
-    }, 100);
+  // Open / close
+  var closeTimer = null;
+  if (isTouch) {
+    trigger.addEventListener("click", function (e) {
+      if (wasDragged) return;
+      e.stopPropagation();
+      isOpen ? closeMenu() : openMenu();
+    });
   } else {
-    heroEntrances.forEach(function (el) { el.classList.add("visible"); });
+    floatingE.addEventListener("mouseenter", function () {
+      if (dragging) return;
+      clearTimeout(closeTimer);
+      openMenu();
+    });
+    floatingE.addEventListener("mouseleave", function () {
+      closeTimer = setTimeout(function () { if (!keepOpen()) closeMenu(); }, 300);
+    });
+    trigger.addEventListener("click", function (e) { if (wasDragged) return; e.stopPropagation(); });
+  }
+  document.addEventListener("click", function (e) {
+    if (isOpen && !floatingE.contains(e.target)) closeMenu();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && isOpen) { closeMenu(); trigger.focus(); }
+  });
+
+  // Email capture → EmailJS
+  var form    = document.getElementById("capture-form");
+  var thanks  = document.getElementById("capture-thanks");
+  var errorEl = document.getElementById("capture-error");
+  var heading = floatingE.querySelector(".capture-heading");
+  var submitted = false;
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function syncCapture() {
+    if (heading) heading.style.display = submitted ? "none" : "";
+    if (form)    form.style.display    = submitted ? "none" : "";
+    if (errorEl && submitted) errorEl.hidden = true;
+    if (thanks)  thanks.hidden = !submitted;
   }
 
-  // ---- Magnetic CTA Button (desktop only) ----
-  if (!isTouch && !prefersReducedMotion) {
-    var ctaBtns = document.querySelectorAll(".cta-btn");
-
-    ctaBtns.forEach(function (btn) {
-      btn.addEventListener("mousemove", function (e) {
-        var rect = btn.getBoundingClientRect();
-        var x = e.clientX - rect.left - rect.width / 2;
-        var y = e.clientY - rect.top - rect.height / 2;
-        btn.classList.add("magnetic-active");
-        btn.style.transform = "translate(" + (x * 0.15) + "px, " + (y * 0.15) + "px)";
-      });
-
-      btn.addEventListener("mouseleave", function () {
-        btn.classList.add("magnetic-active");
-        btn.style.transform = "";
-        setTimeout(function () { btn.classList.remove("magnetic-active"); }, 200);
-      });
-    });
+  // Clear the error as soon as the user edits the field.
+  if (emailInput && errorEl) {
+    emailInput.addEventListener("input", function () { errorEl.hidden = true; });
   }
 
-  // ============================================
-  // Hero Icon — Draggable + Shortcut Wheel
-  // ============================================
-
-  var heroRings        = document.querySelector(".hero-rings");
-  var heroAppIcon      = document.getElementById("hero-app-icon-click");
-  var heroShortcutMenu = document.getElementById("hero-shortcut-menu");
-
-  if (heroRings && heroAppIcon) {
-    var heroDragging   = false;
-    var heroWasDragged = false;
-    var heroOffsetX    = 0;
-    var heroOffsetY    = 0;
-    var heroTransX     = 0;
-    var heroTransY     = 0;
-    var heroStartX     = 0;
-    var heroStartY     = 0;
-    var heroShortcutOpen = false;
-
-    function openHeroShortcut() {
-      heroShortcutOpen = true;
-      heroRings.classList.add("shortcut-open");
-      if (heroShortcutMenu) heroShortcutMenu.setAttribute("aria-hidden", "false");
-    }
-
-    function closeHeroShortcut() {
-      heroShortcutOpen = false;
-      heroRings.classList.remove("shortcut-open");
-      if (heroShortcutMenu) heroShortcutMenu.setAttribute("aria-hidden", "true");
-    }
-
-    function heroOnDragStart(cx, cy) {
-      heroDragging   = true;
-      heroWasDragged = false;
-      heroStartX     = cx;
-      heroStartY     = cy;
-      heroRings.classList.remove("snap-back");
-      heroAppIcon.classList.add("is-dragging");
-      var rect = heroRings.getBoundingClientRect();
-      heroOffsetX = cx - rect.left - rect.width / 2 - heroTransX;
-      heroOffsetY = cy - rect.top  - rect.height / 2 - heroTransY;
-    }
-
-    function heroOnDragMove(cx, cy) {
-      if (!heroDragging) return;
-      var dx = cx - heroStartX;
-      var dy = cy - heroStartY;
-      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) heroWasDragged = true;
-      var rect = heroRings.parentElement.getBoundingClientRect();
-      var newX = cx - (rect.left + rect.width / 2) - heroOffsetX;
-      var newY = cy - (rect.top  + rect.height / 2) - heroOffsetY;
-      heroTransX = newX;
-      heroTransY = newY;
-      heroRings.style.transform = "translate(" + newX + "px, " + newY + "px)";
-    }
-
-    function heroOnDragEnd() {
-      if (!heroDragging) return;
-      heroDragging = false;
-      heroAppIcon.classList.remove("is-dragging");
-
-      heroTransX = 0;
-      heroTransY = 0;
-      heroRings.classList.add("snap-back");
-      heroRings.style.transform = "translate(0, 0)";
-    }
-
-    heroRings.addEventListener("transitionend", function (e) {
-      if (e.propertyName === "transform") {
-        heroRings.classList.remove("snap-back");
-        heroRings.style.transform = "";
-      }
-    });
-
-    heroAppIcon.addEventListener("mousedown", function (e) {
+  if (form) {
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
-      heroOnDragStart(e.clientX, e.clientY);
-    });
-    document.addEventListener("mousemove", function (e) {
-      if (heroDragging) heroOnDragMove(e.clientX, e.clientY);
-    });
-    document.addEventListener("mouseup", function () {
-      if (heroDragging) heroOnDragEnd();
-    });
-
-    heroAppIcon.addEventListener("touchstart", function (e) {
-      var t = e.touches[0];
-      heroOnDragStart(t.clientX, t.clientY);
-    }, { passive: true });
-    document.addEventListener("touchmove", function (e) {
-      if (heroDragging) {
-        var t = e.touches[0];
-        heroOnDragMove(t.clientX, t.clientY);
-      }
-    }, { passive: true });
-    document.addEventListener("touchend", function () {
-      if (heroDragging) heroOnDragEnd();
-    });
-
-    // Close shortcut when clicking outside
-    document.addEventListener("click", function (e) {
-      if (heroShortcutOpen && heroRings && !heroRings.contains(e.target)) {
-        closeHeroShortcut();
-      }
-    });
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && heroShortcutOpen) closeHeroShortcut();
-    });
-
-    // Close shortcut when a shortcut item is clicked
-    if (heroShortcutMenu) {
-      heroShortcutMenu.querySelectorAll(".hero-shortcut-item").forEach(function (item) {
-        item.addEventListener("click", function () { closeHeroShortcut(); });
-      });
-    }
-  }
-
-  // ============================================
-  // Floating E — Magnetic Corner Snap + Pop
-  // ============================================
-
-  var floatingE       = document.getElementById("floating-e");
-  var floatingTrigger = document.getElementById("floating-e-trigger");
-  var heroSection     = document.getElementById("acasa");
-  var floatingEOpen   = false;
-
-  function openFloatingMenu()  { floatingEOpen = true;  floatingE.classList.add("is-open"); }
-  function closeFloatingMenu() { floatingEOpen = false; floatingE.classList.remove("is-open"); }
-
-  if (floatingE && floatingTrigger && heroSection) {
-    var isDragging  = false;
-    var dragStartX  = 0;
-    var dragStartY  = 0;
-    var dragOffsetX = 0;
-    var dragOffsetY = 0;
-    var currentEX   = 0;
-    var currentEY   = 0;
-    var wasDragged  = false;
-    var wasVisible  = false;
-
-    function getESize() {
-      return window.innerWidth < 768 ? 64 : 78;
-    }
-
-    function getCorner() {
-      var sz = getESize();
-      var vW = window.innerWidth;
-      var m  = vW < 768 ? 16 : 24;
-      return { x: vW - sz - m, y: window.innerHeight - sz - m };
-    }
-
-    function getSnapAnchors() {
-      var vW = window.innerWidth;
-      var vH = window.innerHeight;
-      var sz = getESize();
-      var m  = vW < 768 ? 16 : 24;
-      return [
-        { x: vW - sz - m, y: vH - sz - m },
-        { x: m,           y: vH - sz - m },
-        { x: vW - sz - m, y: vH * 0.4 },
-        { x: m,           y: vH * 0.4 }
-      ];
-    }
-
-    function getNearestAnchor(x, y) {
-      var anchors = getSnapAnchors();
-      var best = anchors[0];
-      var bestDist = Infinity;
-      for (var i = 0; i < anchors.length; i++) {
-        var d = Math.pow(x - anchors[i].x, 2) + Math.pow(y - anchors[i].y, 2);
-        if (d < bestDist) { bestDist = d; best = anchors[i]; }
-      }
-      return best;
-    }
-
-    function setPosition(x, y, animate) {
-      currentEX = x;
-      currentEY = y;
-      if (animate) floatingE.classList.add("snapping");
-      else         floatingE.classList.remove("snapping");
-      floatingE.style.transform = "translate(" + x + "px, " + y + "px)";
-    }
-
-    floatingE.addEventListener("transitionend", function (e) {
-      if (e.propertyName === "transform") floatingE.classList.remove("snapping");
-    });
-
-    function updateMenuSide() {
-      floatingE.classList.toggle("menu-flip", currentEX < window.innerWidth / 2);
-    }
-
-    function updateFloatingE() {
-      if (isDragging) return;
-      var heroRect = heroSection.getBoundingClientRect();
-      var shouldHide = heroRect.bottom > window.innerHeight * 0.15;
-      var corner = getCorner();
-
-      if (shouldHide) {
-        if (wasVisible) {
-          wasVisible = false;
-          closeFloatingMenu();
-          floatingE.classList.add("snapping");
-          floatingE.style.opacity = "0";
-          floatingE.style.transform = "translate(" + corner.x + "px, " + corner.y + "px) scale(0.4)";
-          setTimeout(function () {
-            floatingE.classList.remove("visible", "snapping");
-          }, 450);
-        } else {
-          floatingE.classList.remove("visible", "snapping");
-          floatingE.style.opacity = "0";
-          floatingE.style.transform = "translate(" + corner.x + "px, " + corner.y + "px) scale(0)";
-          currentEX = corner.x;
-          currentEY = corner.y;
-        }
+      var email = emailInput ? emailInput.value.trim() : "";
+      if (!EMAIL_RE.test(email)) {              // not a valid address — flag and bail
+        if (errorEl) errorEl.hidden = false;
+        if (emailInput) emailInput.focus();
         return;
       }
-
-      if (!wasVisible) {
-        // Pop in from corner
-        wasVisible = true;
-        floatingE.classList.remove("snapping");
-        floatingE.style.opacity = "0";
-        floatingE.style.transform = "translate(" + corner.x + "px, " + corner.y + "px) scale(0)";
-        currentEX = corner.x;
-        currentEY = corner.y;
-
-        void floatingE.offsetWidth; // commit initial state
-        requestAnimationFrame(function () {
-          floatingE.classList.add("visible", "snapping");
-          floatingE.style.opacity = "1";
-          floatingE.style.transform = "translate(" + corner.x + "px, " + corner.y + "px) scale(1)";
-          updateMenuSide();
-        });
-      } else {
-        // Already visible — only clamp to viewport (e.g. after resize), don't override dragged position
-        var sz = getESize();
-        var clampedX = Math.max(0, Math.min(window.innerWidth - sz, currentEX));
-        var clampedY = Math.max(0, Math.min(window.innerHeight - sz, currentEY));
-        if (clampedX !== currentEX || clampedY !== currentEY) {
-          setPosition(clampedX, clampedY, false);
-        }
-        updateMenuSide();
-      }
-    }
-
-    function onDragStart(cx, cy) {
-      isDragging = true;
-      wasDragged = false;
-      floatingE.classList.remove("snapping");
-      dragStartX  = cx; dragStartY  = cy;
-      dragOffsetX = cx - currentEX;
-      dragOffsetY = cy - currentEY;
-      floatingE.style.cursor = "grabbing";
-    }
-
-    function onDragMove(cx, cy) {
-      if (!isDragging) return;
-      var dx = cx - dragStartX;
-      var dy = cy - dragStartY;
-      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) wasDragged = true;
-      var sz = getESize();
-      var newX = Math.max(0, Math.min(window.innerWidth  - sz, cx - dragOffsetX));
-      var newY = Math.max(0, Math.min(window.innerHeight - sz, cy - dragOffsetY));
-      setPosition(newX, newY, false);
-    }
-
-    function onDragEnd() {
-      if (!isDragging) return;
-      isDragging = false;
-      floatingE.style.cursor = "";
-      var anchor = getNearestAnchor(currentEX, currentEY);
-      setPosition(anchor.x, anchor.y, true);
-      currentEX = anchor.x;
-      updateMenuSide();
-    }
-
-    floatingTrigger.addEventListener("mousedown", function (e) { e.preventDefault(); onDragStart(e.clientX, e.clientY); });
-    document.addEventListener("mousemove",  function (e) { if (isDragging) onDragMove(e.clientX, e.clientY); });
-    document.addEventListener("mouseup",    function ()  { if (isDragging) onDragEnd(); });
-
-    floatingTrigger.addEventListener("touchstart", function (e) {
-      onDragStart(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
-    document.addEventListener("touchmove", function (e) {
-      if (isDragging) onDragMove(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
-    document.addEventListener("touchend", function () { if (isDragging) onDragEnd(); });
-
-    var floatingETicking = false;
-    window.addEventListener("scroll", function () {
-      if (floatingEOpen) closeFloatingMenu();
-      if (!floatingETicking) {
-        floatingETicking = true;
-        requestAnimationFrame(function () { updateFloatingE(); floatingETicking = false; });
-      }
-    }, { passive: true });
-
-    updateFloatingE();
-    window.addEventListener("resize", function () { if (!isDragging) updateFloatingE(); });
-
-    var hoverCloseTimer = null;
-
-    if (isTouch) {
-      floatingTrigger.addEventListener("click", function (e) {
-        if (wasDragged) return;
-        e.stopPropagation();
-        if (floatingEOpen) closeFloatingMenu(); else openFloatingMenu();
-      });
-    } else {
-      floatingE.addEventListener("mouseenter", function () {
-        if (isDragging) return;
-        if (hoverCloseTimer) { clearTimeout(hoverCloseTimer); hoverCloseTimer = null; }
-        openFloatingMenu();
-      });
-      floatingE.addEventListener("mouseleave", function () {
-        hoverCloseTimer = setTimeout(function () {
-          closeFloatingMenu();
-          hoverCloseTimer = null;
-        }, 300);
-      });
-      floatingTrigger.addEventListener("click", function (e) {
-        if (wasDragged) return;
-        e.stopPropagation();
-      });
-    }
-
-    document.addEventListener("click", function (e) {
-      if (floatingEOpen && !floatingE.contains(e.target)) closeFloatingMenu();
+      if (errorEl) errorEl.hidden = true;
+      try {
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { email: email, name: "eCarnet Visitor" })
+          .catch(function (err) { console.error("EmailJS error:", err); });
+      } catch (err) { console.error("EmailJS send exception:", err); }
+      submitted = true;
+      syncCapture();
     });
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && floatingEOpen) {
-        closeFloatingMenu();
-        floatingTrigger.focus();
-      }
-    });
-
-    // Email capture
-    var captureForm   = document.getElementById("capture-form");
-    var captureThanks = document.getElementById("capture-thanks");
-
-    var captureHeading = document.querySelector(".capture-heading");
-
-    function showCaptureThanks() {
-      if (captureHeading) captureHeading.style.display = "none";
-      if (captureForm)    captureForm.style.display    = "none";
-      if (captureThanks)  captureThanks.style.display  = "block";
-    }
-
-    function showCaptureForm() {
-      if (captureHeading) captureHeading.style.display = "";
-      if (captureForm)    captureForm.style.display    = "";
-      if (captureThanks)  captureThanks.style.display  = "none";
-    }
-
-    var captureSubmitted = false;
-
-    function checkCaptureState() {
-      if (captureSubmitted) showCaptureThanks();
-      else showCaptureForm();
-    }
-
-    var originalOpenFloating = openFloatingMenu;
-    openFloatingMenu = function () { originalOpenFloating(); checkCaptureState(); };
-
-    if (captureForm) {
-      captureForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        var emailInput = document.getElementById("capture-email");
-        var email = emailInput ? emailInput.value.trim() : "";
-        if (!email) return;
-
-        try {
-          emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { email: email, name: "eCarnet Visitor" })
-            .catch(function (err) { console.error("EmailJS error:", err); });
-        } catch (err) { console.error("EmailJS send exception:", err); }
-
-        captureSubmitted = true;
-        showCaptureThanks();
-      });
-    }
   }
-
-  // Profile card
-  var attributionTrigger = document.getElementById("attribution-trigger");
-  var profileCard        = document.getElementById("profile-card");
-  var profileCardTimer   = null;
-
-  if (attributionTrigger && profileCard) {
-    function openProfileCard() {
-      if (profileCardTimer) { clearTimeout(profileCardTimer); profileCardTimer = null; }
-      profileCard.classList.add("visible");
-      profileCard.setAttribute("aria-hidden", "false");
-      attributionTrigger.setAttribute("aria-expanded", "true");
-    }
-
-    function closeProfileCard() {
-      profileCard.classList.remove("visible");
-      profileCard.setAttribute("aria-hidden", "true");
-      attributionTrigger.setAttribute("aria-expanded", "false");
-    }
-
-    attributionTrigger.addEventListener("mouseenter", openProfileCard);
-    profileCard.addEventListener("mouseenter",  function () {
-      if (profileCardTimer) { clearTimeout(profileCardTimer); profileCardTimer = null; }
-    });
-    attributionTrigger.addEventListener("mouseleave", function () {
-      profileCardTimer = setTimeout(closeProfileCard, 200);
-    });
-    profileCard.addEventListener("mouseleave", function () {
-      profileCardTimer = setTimeout(closeProfileCard, 200);
-    });
-
-    attributionTrigger.addEventListener("click", function (e) {
-      e.preventDefault();
-      if (profileCard.classList.contains("visible")) closeProfileCard();
-      else openProfileCard();
-    });
-
-    document.addEventListener("click", function (e) {
-      if (profileCard.classList.contains("visible") &&
-          !attributionTrigger.contains(e.target) &&
-          !profileCard.contains(e.target)) {
-        closeProfileCard();
-      }
-    });
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && profileCard.classList.contains("visible")) {
-        closeProfileCard();
-        attributionTrigger.focus();
-      }
-    });
-
-    // macOS traffic light buttons
-    var pcClose    = document.getElementById("pc-close");
-    var pcMinimize = document.getElementById("pc-minimize");
-    var pcZoom     = document.getElementById("pc-zoom");
-
-    if (pcClose) {
-      pcClose.addEventListener("click", function (e) {
-        e.stopPropagation();
-        closeProfileCard();
-      });
-    }
-
-    if (pcMinimize) {
-      pcMinimize.addEventListener("click", function (e) {
-        e.stopPropagation();
-        profileCard.classList.add("minimized");
-        setTimeout(function () { closeProfileCard(); profileCard.classList.remove("minimized"); }, 520);
-      });
-    }
-
-    if (pcZoom) {
-      pcZoom.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var isZoomed = profileCard.classList.toggle("zoomed");
-        pcZoom.title = isZoomed ? "Unzoom" : "Zoom";
-        pcZoom.setAttribute("aria-label", isZoomed ? "Unzoom" : "Zoom");
-      });
-    }
-  }
-
 })();

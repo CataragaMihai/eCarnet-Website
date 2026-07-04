@@ -1,447 +1,453 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eCarnet — Carnetul tău digital</title>
-  <meta name="description" content="eCarnet este o aplicație mobilă care înlocuiește carnetul fizic de elev și student din Moldova cu o soluție digitală modernă." />
-  <link rel="icon" type="image/png" href="assets/icon.png" />
-  <link rel="apple-touch-icon" href="assets/icon.png" />
-  <meta property="og:title" content="eCarnet — Carnetul tău digital" />
-  <meta property="og:description" content="O aplicație mobilă care înlocuiește carnetul fizic de elev și student din Moldova." />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="assets/icon.png" />
-  <meta name="theme-color" content="#0C1F33" />
-
-  <link rel="icon" href="assets/icon.png" type="image/png" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,700&family=Poppins:wght@300;400;500;600&display=swap"
-    rel="stylesheet"
-  />
-
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/animations.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eCarnet</title>
+  <link rel="icon" href="assets/icon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700;800&family=Fira+Sans+Condensed:wght@800;900&family=Fleur+De+Leah&family=Gantari&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700;800&family=Fira+Sans+Condensed:wght@800;900&family=Fleur+De+Leah&family=Gantari&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <noscript>
+    <style>
+      .hero-skeleton { display: none; }
+      .hero-text > *, .hero-mockup-col, .navbar { opacity: 1 !important; animation: none !important; }
+    </style>
+  </noscript>
 </head>
 <body>
 
-  <div class="scroll-progress" aria-hidden="true"></div>
-  <a href="#acasa" class="skip-link">Treci la conținut</a>
-  <div class="mobile-overlay" aria-hidden="true"></div>
-
-  <!-- NAVBAR -->
-  <header class="navbar" role="banner">
+  <nav class="navbar">
     <div class="nav-inner">
+
       <a href="#acasa" class="nav-brand" aria-label="eCarnet">
-        <span>eCarnet</span>
+        <span class="brand-text">
+          <span class="brand-e">e</span><span class="brand-rest">Carnet</span>
+        </span>
+        <span class="brand-mark" aria-hidden="true">
+          <img src="assets/e_with cap.svg" alt="" class="brand-mark-img" draggable="false">
+        </span>
       </a>
 
-      <nav aria-label="Navigare principală">
-        <ul class="nav-links" id="primary-nav" role="list">
+      <!-- On desktop this wrapper is display:contents (invisible to the grid);
+           on mobile it becomes the slide-in drawer. -->
+      <div class="nav-drawer" id="nav-drawer">
+
+        <button class="nav-drawer-close" id="nav-drawer-close" type="button" aria-label="Închide meniul">
+          <span></span><span></span>
+        </button>
+
+        <ul class="nav-links">
           <li><a href="#acasa"    class="nav-link active" data-i18n="nav.home">Acasă</a></li>
           <li><a href="#problema" class="nav-link" data-i18n="nav.problem">Problema</a></li>
-          <li><a href="#solutie"  class="nav-link" data-i18n="nav.solution">Soluția</a></li>
-          <li><a href="#progres"  class="nav-link" data-i18n="nav.roadmap">Progres</a></li>
-          <li class="nav-lang-mobile" aria-hidden="true">
-            <div class="lang-switcher">
-              <button class="lang-btn" data-lang="ro">RO</button>
-              <button class="lang-btn" data-lang="en">EN</button>
-              <button class="lang-btn" data-lang="ru">RU</button>
-            </div>
-          </li>
+          <li><a href="#solutia"  class="nav-link" data-i18n="nav.solution">Soluția</a></li>
+          <li><a href="#progres"  class="nav-link" data-i18n="nav.progress">Progres</a></li>
         </ul>
-      </nav>
 
-      <div class="lang-switcher lang-switcher--desktop" role="group" aria-label="Language / Limbă / Язык">
-        <button class="lang-btn" data-lang="ro">RO</button>
-        <button class="lang-btn" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="ru">RU</button>
+        <div class="drawer-divider" aria-hidden="true"></div>
+
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="ro">RO</button>
+          <button class="lang-btn"        data-lang="en">EN</button>
+          <button class="lang-btn"        data-lang="ru">RU</button>
+        </div>
+
       </div>
 
-      <button class="hamburger" aria-label="Deschide meniu" aria-expanded="false" aria-controls="primary-nav">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Meniu" aria-expanded="false" aria-controls="nav-drawer">
+        <span></span><span></span><span></span>
       </button>
+
     </div>
-  </header>
+  </nav>
 
-  <main>
+  <div class="nav-overlay" id="nav-overlay" aria-hidden="true"></div>
 
-    <!-- ============================
-         1. HERO
-         ============================ -->
-    <section id="acasa" class="hero" aria-labelledby="hero-heading">
-      <div class="hero-inner">
+  <!-- HERO -->
+  <section id="acasa" class="hero">
 
-        <div class="hero-copy">
-          <h1 id="hero-heading" class="hero-title hero-entrance hero-entrance--2" data-i18n-html="hero.title">
-            eCarnet este carnetul tău <span class="hero-title-glow-wrap"><span class="hero-title-accent">digital</span></span>
-          </h1>
+    <!-- Loading skeleton (removed once fonts + the phone image are ready) -->
+    <div class="hero-skeleton" id="hero-skeleton" aria-hidden="true">
+      <div class="hero-skeleton-inner">
+        <div class="sk-text">
+          <div class="sk-line sk-line-xl"></div>
+          <div class="sk-line sk-line-xl"></div>
+          <div class="sk-line sk-line-xl sk-mobile-extra sk-accent"></div>
+          <div class="sk-line sk-sub"></div>
+          <div class="sk-line sk-sub sk-mobile-extra sk-sub-b"></div>
+          <div class="sk-line sk-sub sk-mobile-extra sk-sub-c"></div>
+          <div class="sk-line sk-sub sk-sub-short"></div>
+          <div class="sk-btn"></div>
+        </div>
+        <div class="sk-phone"></div>
+      </div>
+    </div>
 
-          <p class="hero-subtitle hero-entrance hero-entrance--3" data-i18n="hero.subtitle">
-            eCarnet înlocuiește carnetul fizic cu o soluție digitală. Mereu cu tine, niciodată pierdut.
-          </p>
+    <div class="hero-inner">
 
-          <a href="#problema" class="cta-btn glow-btn hero-entrance hero-entrance--4" aria-label="Descoperă eCarnet">
-            <span data-i18n="hero.cta">Vezi cum funcționează</span>
-            <svg class="cta-btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <polyline points="19 12 12 19 5 12"/>
-            </svg>
-          </a>
+      <div class="hero-text">
+        <h1 class="hero-headline">
+          <span class="headline-white" data-i18n="hero.headlineWhite">eCarnet este carnetul tău</span>
+          <span class="headline-gradient-wrap">
+            <span class="headline-gradient" data-i18n="hero.headlineAccent">acum digital!</span>
+          </span>
+        </h1>
+
+        <!-- Mobile-only hero visual: static orbit (dashed ring + app icon).
+             The phone mockup moves to the solution section on mobile (per Figma). -->
+        <div class="hero-orbit-mobile" aria-hidden="true">
+          <svg class="solution-orbit-ring" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="180" cy="180" r="179" stroke="#0072D2" stroke-width="1.8" stroke-dasharray="10 15" />
+          </svg>
+          <img src="assets/icon.png" alt="" class="hero-orbit-icon" draggable="false">
         </div>
 
-        <div class="hero-visual" aria-hidden="true">
-          <div class="hero-rings">
-            <div class="hero-ring"></div>
-            <div class="hero-ring"></div>
-            <div class="hero-ring-dashed"></div>
-            <div class="hero-app-icon glow-icon" id="hero-app-icon-click">
-              <img src="assets/icon.png" alt="eCarnet app icon" width="180" height="180" />
-            </div>
-            <div class="hero-shortcut-menu" id="hero-shortcut-menu" role="menu" aria-hidden="true">
-              <a href="#acasa"    class="hero-shortcut-item" role="menuitem" data-label="Acasă" style="--i:0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              </a>
-              <a href="#problema" class="hero-shortcut-item" role="menuitem" data-label="Problema" style="--i:1">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              </a>
-              <a href="#solutie"  class="hero-shortcut-item" role="menuitem" data-label="Soluția" style="--i:2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              </a>
-              <a href="#progres"  class="hero-shortcut-item" role="menuitem" data-label="Progres" style="--i:3">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </a>
-              <a href="mailto:cataragamihai2006@gmail.com" class="hero-shortcut-item" role="menuitem" data-label="Mesaj" style="--i:4">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              </a>
-            </div>
+        <p class="hero-subtitle">
+          <span data-i18n="hero.sub1">eCarnet înlocuiește actualul carnet al elevului cu o soluție digitală.</span>
+          <span data-i18n="hero.sub2">Acest carnet va fi mereu cu tine, niciodată pierdut.</span>
+        </p>
+        <a href="#problema" class="cta-btn" id="cta-main" data-i18n="hero.cta">Află mai multe!</a>
+      </div>
+
+      <div class="hero-mockup-col">
+        <img src="assets/phone_mockup_romanian.png" alt="eCarnet app" class="hero-phone-mockup">
+      </div>
+
+    </div>
+
+    <div class="scroll-indicator" aria-hidden="true">
+      <div class="scroll-mouse">
+        <div class="scroll-wheel"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- PROBLEM -->
+  <section id="problema" class="problem-section">
+    <div class="problem-inner">
+
+      <h2 class="problem-heading animate-in" data-i18n="problem.heading">Carnetul fizic e depășit.</h2>
+
+      <div class="problem-grid">
+
+        <div class="problem-card animate-in">
+          <div class="card-header">
+            <span class="card-num">1.</span>
+            <h3 class="card-title" data-i18n="problem.c1.title">Se pierde ușor</h3>
           </div>
+          <p class="card-desc" data-i18n="problem.c1.desc">Carnetul fizic poate fi uitat acasă sau pierdut, tocmai când ai nevoie de el.</p>
+        </div>
+
+        <div class="problem-card animate-in">
+          <div class="card-header">
+            <span class="card-num">2.</span>
+            <h3 class="card-title" data-i18n="problem.c2.title">Expiră</h3>
+          </div>
+          <p class="card-desc" data-i18n="problem.c2.desc">Anual, carnetul expiră și trebuie reînnoit, iar mereu uiți să o faci. Timp pierdut, bani cheltuiți.</p>
+        </div>
+
+        <div class="problem-card animate-in">
+          <div class="card-header">
+            <span class="card-num">3.</span>
+            <h3 class="card-title" data-i18n="problem.c3.title">Birocrație inutilă</h3>
+          </div>
+          <p class="card-desc" data-i18n="problem.c3.desc">Ștampile, semnături, hârtii, poze. Un proces depășit.</p>
+        </div>
+
+        <div class="problem-card animate-in">
+          <div class="card-header">
+            <span class="card-num">4.</span>
+            <h3 class="card-title" data-i18n="problem.c4.title">Cheltuieli</h3>
+          </div>
+          <p class="card-desc" data-i18n="problem.c4.desc">Când îți faci un carnet nou, când îl pierzi sau când îl reînoiești, trebuie să achiți bani.</p>
         </div>
 
       </div>
+    </div>
+  </section>
 
-    </section>
+  <!-- WAVE: problem → solution -->
+  <div class="wave-divider wave-to-light" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
+      <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#faf9f6"/>
+    </svg>
+  </div>
 
+  <!-- SOLUTION -->
+  <section id="solutia" class="solution-section">
+    <div class="solution-inner">
 
-    <!-- ============================
-         2. PROBLEM
-         ============================ -->
-    <section id="problema" class="problem-section" aria-labelledby="problem-heading">
-      <div class="container">
+      <h2 class="solution-heading animate-in" data-i18n="solution.heading">Același carnet, acum digital.</h2>
 
-        <div class="section-header reveal">
-          <h2 id="problem-heading" class="section-title section-title--light" data-i18n="problem.title">
-            Carnetul fizic este învechit.
-          </h2>
+      <div class="solution-layout">
+
+        <div class="mockup-col animate-in">
+          <div class="solution-orbit">
+            <span class="orbit-easter" data-i18n="solution.easter">totul pentru elevi</span>
+            <div class="ring-magnet">
+              <svg class="solution-orbit-ring" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="180" cy="180" r="179" stroke="#0072D2" stroke-width="1.8" stroke-dasharray="10 15" />
+              </svg>
+            </div>
+            <div class="icon-magnet">
+              <img src="assets/icon.png" alt="eCarnet" class="solution-icon" draggable="false">
+            </div>
+          </div>
+          <!-- Mobile-only: the phone mockup replaces the orbit here (per Figma).
+               Carries .hero-phone-mockup so i18n swaps it per language too. -->
+          <img src="assets/phone_mockup_romanian.png" alt="eCarnet app" class="hero-phone-mockup solution-phone-mobile" draggable="false">
         </div>
 
-        <div class="problem-grid" role="list">
+        <div class="features-col">
 
-          <div class="problem-card reveal reveal-delay-1" role="listitem">
-            <div class="problem-card-header">
-              <div class="problem-card-icon" aria-hidden="true">
-                <span class="site-icon site-icon--question" style="width:22px;height:22px"></span>
+          <div class="feature-card animate-in">
+            <div class="feature-body">
+              <h3 class="feature-title" data-i18n="solution.f1.title">Identitate de elev digitală</h3>
+              <p class="feature-desc" data-i18n="solution.f1.desc">Arăți telefonul și gata. Funcționează oriunde ai nevoie să dovedești că ești elev sau student.</p>
+              <div class="feature-tags">
+                <span class="tag" data-i18n="solution.f1.tag1">Transport public</span>
+                <span class="tag" data-i18n="solution.f1.tag2">Reduceri</span>
+                <span class="tag" data-i18n="solution.f1.tag3">Verificare</span>
               </div>
-              <h3 class="problem-card-title" data-i18n="problem.1.title">Se pierde ușor</h3>
             </div>
-            <p class="problem-card-text" data-i18n="problem.1.text">Carnetul fizic poate fi uitat acasă sau pierdut, tocmai când ai nevoie de el.</p>
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" stroke="#111" stroke-width="1.5"/>
+                <path d="M4 20c0-3.31 3.58-6 8-6s8 2.69 8 6" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
           </div>
 
-          <div class="problem-card reveal reveal-delay-2" role="listitem">
-            <div class="problem-card-header">
-              <div class="problem-card-icon" aria-hidden="true">
-                <span class="site-icon site-icon--calendar" style="width:22px;height:22px"></span>
-              </div>
-              <h3 class="problem-card-title" data-i18n="problem.2.title">Expiră</h3>
+          <div class="feature-card animate-in">
+            <div class="feature-body">
+              <h3 class="feature-title" data-i18n="solution.f2.title">Note și absențe</h3>
+              <p class="feature-desc" data-i18n="solution.f2.desc">eCatalog va fi integrat în eCarnet cu toate notele, mediile și absențele.</p>
             </div>
-            <p class="problem-card-text" data-i18n="problem.2.text">Anual, carnetul expiră și trebuie reînnoit, iar mereu uiți să o faci. Timp pierdut, bani cheltuiți.</p>
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" stroke="#111" stroke-width="1.5"/>
+                <path d="M12 6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2h-6a2 2 0 01-2-2V6z" stroke="#111" stroke-width="1.5"/>
+              </svg>
+            </div>
           </div>
 
-          <div class="problem-card reveal reveal-delay-3" role="listitem">
-            <div class="problem-card-header">
-              <div class="problem-card-icon" aria-hidden="true">
-                <span class="site-icon site-icon--document" style="width:22px;height:22px"></span>
-              </div>
-              <h3 class="problem-card-title" data-i18n="problem.3.title">Birocrație inutilă</h3>
+          <div class="feature-card animate-in">
+            <div class="feature-body">
+              <h3 class="feature-title" data-i18n="solution.f3.title">Orar și notițe</h3>
+              <p class="feature-desc" data-i18n="solution.f3.desc">Orarul lecțiilor, temele pe acasă, notițe personale. Vei putea să scrii totul în aplicație.</p>
             </div>
-            <p class="problem-card-text" data-i18n="problem.3.text">Ștampile, semnături, hârtii. Un proces depășit.</p>
-          </div>
-
-          <div class="problem-card reveal reveal-delay-4" role="listitem">
-            <div class="problem-card-header">
-              <div class="problem-card-icon" aria-hidden="true">
-                <span class="site-icon site-icon--paper" style="width:22px;height:22px"></span>
-              </div>
-              <h3 class="problem-card-title" data-i18n="problem.4.title">O hârtie simplă</h3>
+            <div class="feature-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="#111" stroke-width="1.5"/>
+                <path d="M3 9h18M8 2v4M16 2v4" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
             </div>
-            <p class="problem-card-text" data-i18n="problem.4.text">Nu arată notele, absențele sau orarul tău. E doar o hârtie.</p>
-          </div>
-
-          <div class="problem-card reveal reveal-delay-5" role="listitem">
-            <div class="problem-card-header">
-              <div class="problem-card-icon" aria-hidden="true">
-                <span class="site-icon site-icon--money-coin" style="width:22px;height:22px"></span>
-              </div>
-              <h3 class="problem-card-title" data-i18n="problem.5.title">Cheltuială</h3>
-            </div>
-            <p class="problem-card-text" data-i18n="problem.5.text">De fiecare dată când îți faci un carnet nou, sau când îl pierzi, sau când îl reînoiești, achiți bani. În decursul anilor, aceste cheltuieli se adună.</p>
           </div>
 
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
+  <!-- WAVE: solution → progress -->
+  <div class="wave-divider wave-to-dark" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 60" preserveAspectRatio="none">
+      <path d="M0,30 C360,0 1080,60 1440,30 L1440,60 L0,60 Z" fill="#00385D"/>
+    </svg>
+  </div>
 
-    <!-- ============================
-         3. SOLUTION
-         ============================ -->
-    <section id="solutie" class="solution-section" aria-labelledby="solution-heading">
-      <div class="solution-inner container">
+  <!-- PROGRESS -->
+  <section id="progres" class="progress-section">
+    <div class="progress-inner">
 
-        <div class="section-header reveal">
-          <h2 id="solution-heading" class="section-title" data-i18n="solution.title">Același carnet. Acum digital.</h2>
+      <h2 class="progress-heading animate-in" data-i18n="progress.heading">Parcursul eCarnet.</h2>
+      <p class="progress-subtitle animate-in" data-i18n="progress.subtitle">eCarnet încă nu e gata. Iată unde suntem și unde vrem să ajungem.</p>
+
+      <div class="timeline-v2">
+
+        <div class="tl-track">
+          <div class="tl-track-line"></div>
+          <div class="tl-track-accent"></div>
         </div>
 
-        <div class="solution-layout">
-          <div class="solution-visual reveal-scale" id="concept-mockup" aria-hidden="true">
-            <img src="assets/mockup.png" alt="eCarnet app mockup" width="280" height="560" loading="lazy" />
-          </div>
-
-          <div class="solution-features" role="list">
-
-            <div class="feature-card feature-card--featured reveal reveal-delay-1" role="listitem">
-              <div class="feature-card-top">
-                <div class="feature-icon-wrap" aria-hidden="true">
-                  <span class="site-icon site-icon--user" style="width:20px;height:20px"></span>
-                </div>
-                <h3 class="feature-heading" data-i18n="solution.f1.title">Identitate digitală verificabilă</h3>
-              </div>
-              <p class="feature-text" data-i18n="solution.f1.text">
-                Arăți telefonul și gata. Funcționează oriunde ai nevoie să dovedești că ești elev sau student.
-              </p>
-              <ul class="feature-uses" aria-hidden="true">
-                <li>Transport public</li>
-                <li>Reduceri</li>
-                <li>Verificare</li>
-              </ul>
-            </div>
-
-            <div class="feature-card reveal reveal-delay-2" role="listitem">
-              <div class="feature-card-top">
-                <div class="feature-icon-wrap" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 1000 1000" fill="currentColor">
-                    <path d="M500,833.05a14,14,0,0,1-14-14V272.56a14,14,0,0,1,3.79-9.58c28.66-30.57,66.15-54.25,111.43-70.4,35.71-12.73,76.34-20.82,120.76-24.05,75.2-5.46,134.74,4.79,137.23,5.23a14,14,0,0,1,11.58,13.79V728.8a14,14,0,0,1-13.7,14c-2.33.05-235,6.08-348.94,87.65A14,14,0,0,1,500,833.05ZM514,278.2V793.38c50.22-29.32,119.61-51.21,206.78-65.19a1142.71,1142.71,0,0,1,122-12.86V199.67a617.21,617.21,0,0,0-119.42-3.17C659.65,201.21,572.26,219.27,514,278.2Z"/>
-                    <path d="M925,833.05H75a14,14,0,0,1-14-14V242.56a14,14,0,0,1,14-14h68.21a14,14,0,0,1,0,28H89V805.05H911V256.56H856.79a14,14,0,0,1,0-28H925a14,14,0,0,1,14,14V819.05A14,14,0,0,1,925,833.05Z"/>
-                    <path d="M500,833.05a14,14,0,0,1-8.15-2.61C377.76,748.8,145.24,742.84,142.91,742.79a14,14,0,0,1-13.7-14V187.55a14,14,0,0,1,11.58-13.79c2.49-.44,62-10.69,137.23-5.23,44.42,3.23,85.05,11.32,120.76,24.05,45.28,16.15,82.77,39.83,111.43,70.4a14,14,0,0,1,3.79,9.58V819.05a14,14,0,0,1-14,14ZM157.21,715.33a1142.71,1142.71,0,0,1,122,12.86c87.17,14,156.56,35.87,206.78,65.19V278.2c-58.4-59.07-146.08-77.1-210-81.74a615.17,615.17,0,0,0-118.78,3.2Z"/>
-                  </svg>
-                </div>
-                <h3 class="feature-heading" data-i18n="solution.f2.title">Note și absențe</h3>
-              </div>
-              <p class="feature-text" data-i18n="solution.f2.text">
-                Catalogul electronic la îndemână. Note, medii, absențe, totul într-un singur loc.
-              </p>
-            </div>
-
-            <div class="feature-card reveal reveal-delay-3" role="listitem">
-              <div class="feature-card-top">
-                <div class="feature-icon-wrap" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M5 4.5a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 1 0v2a.5.5 0 0 1-.5.5zM11 4.5a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 1 0v2a.5.5 0 0 1-.5.5z"/>
-                    <path d="M13 14.5H3c-.827 0-1.5-.673-1.5-1.5V4c0-.827.673-1.5 1.5-1.5h10c.827 0 1.5.673 1.5 1.5v9c0 .827-.673 1.5-1.5 1.5zM3 3.5a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V4a.5.5 0 0 0-.5-.5H3z"/>
-                    <path d="M14 6.5H2a.5.5 0 0 1 0-1h12a.5.5 0 0 1 0 1zM5.5 7.5h1v1h-1zM7.5 7.5h1v1h-1zM9.5 7.5h1v1h-1zM11.5 7.5h1v1h-1zM3.5 9.5h1v1h-1zM5.5 9.5h1v1h-1zM7.5 9.5h1v1h-1zM9.5 9.5h1v1h-1z"/>
-                  </svg>
-                </div>
-                <h3 class="feature-heading" data-i18n="solution.f3.title">Orar și notițe</h3>
-              </div>
-              <p class="feature-text" data-i18n="solution.f3.text">
-                Orarul zilei, teme, notițe personale. O agendă care ține totul la un loc.
-              </p>
-            </div>
-
-          </div>
+        <!-- Faded continuation past the last pill → "more may follow" -->
+        <div class="tl-track-tail">
+          <span class="tl-tail-line" aria-hidden="true"></span>
+          <span class="tl-tail-mark">
+            <span class="tl-tail-glyph" aria-hidden="true">?</span>
+            <span class="tl-tail-soon" data-i18n="progress.tail.soon">În curând...</span>
+          </span>
         </div>
 
+        <div class="tl-stops">
+
+          <div class="tl-stop stop-now">
+            <span class="tl-pill pill-now" data-i18n="progress.now.pill">Acum</span>
+            <div class="tl-content">
+              <p data-i18n="progress.now.text">Definim structura aplicației, modul de utilizare și designul.</p>
+            </div>
+          </div>
+
+          <div class="tl-stop stop-upcoming">
+            <span class="tl-pill pill-upcoming" data-i18n="progress.next.pill">Urmează</span>
+            <div class="tl-content">
+              <div class="tl-item">
+                <h4 class="tl-item-title" data-i18n="progress.next.i1.title">Prototip funcțional</h4>
+                <p class="tl-item-desc" data-i18n="progress.next.i1.desc">Prima versiune funcțională a aplicației mobile, testată intern cu un set limitat de utilizatori.</p>
+              </div>
+              <div class="tl-item">
+                <h4 class="tl-item-title" data-i18n="progress.next.i2.title">Pilot cu o școală</h4>
+                <p class="tl-item-desc" data-i18n="progress.next.i2.desc">Colaborare cu o școală din Chișinău pentru un test real în condiții reale.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="tl-stop stop-future">
+            <span class="tl-pill pill-future" data-i18n="progress.future.pill">Viitor</span>
+            <div class="tl-content">
+              <div class="tl-item">
+                <h4 class="tl-item-title" data-i18n="progress.future.i1.title">Securitate</h4>
+                <p class="tl-item-desc" data-i18n="progress.future.i1.desc">Îmbunătățiri bazate pe feedback real. Audit de securitate, sistem de validare digitală.</p>
+              </div>
+              <div class="tl-item">
+                <h4 class="tl-item-title" data-i18n="progress.future.i2.title">Lansare Publică</h4>
+                <p class="tl-item-desc" data-i18n="progress.future.i2.desc">Disponibil pe iOS și Android. Pregătit pentru adoptare în școlile din Moldova.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </section>
 
-
-    <!-- ============================
-         4. ROADMAP
-         ============================ -->
-    <section id="progres" class="roadmap" aria-labelledby="roadmap-heading">
-      <div class="container">
-
-        <div class="section-header reveal">
-          <h2 id="roadmap-heading" class="section-title section-title--light" data-i18n="roadmap.title">
-            Parcursul eCarnet.
-          </h2>
-          <p class="section-subtitle section-subtitle--light" data-i18n="roadmap.subtitle">
-            eCarnet încă nu e gata. Iată unde suntem și unde vrem să ajungem.
-          </p>
-        </div>
-
-        <div class="timeline reveal reveal-delay-2" role="list">
-
-          <div class="timeline-item timeline-item--active" role="listitem">
-            <div class="timeline-dot timeline-dot--active"></div>
-            <div class="timeline-content">
-              <span class="timeline-badge timeline-badge--current" data-i18n="roadmap.s1.badge">Acum</span>
-              <h3 data-i18n="roadmap.s1.title">Concept și design</h3>
-              <p data-i18n="roadmap.s1.text">Definim structura aplicației, modul de utilizare și designul vizual.</p>
-            </div>
-          </div>
-
-          <div class="timeline-item" role="listitem">
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-              <span class="timeline-badge" data-i18n="roadmap.s2.badge">Urmează</span>
-              <h3 data-i18n="roadmap.s2.title">Prototip funcțional</h3>
-              <p data-i18n="roadmap.s2.text">Prima versiune funcțională a aplicației mobile, testată intern cu un set limitat de utilizatori.</p>
-            </div>
-          </div>
-
-          <div class="timeline-item" role="listitem">
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-              <span class="timeline-badge" data-i18n="roadmap.s3.badge">Viitor</span>
-              <h3 data-i18n="roadmap.s3.title">Pilot cu o instituție</h3>
-              <p data-i18n="roadmap.s3.text">Colaborare cu o școală din Chișinău pentru un test real în condiții reale.</p>
-            </div>
-          </div>
-
-          <div class="timeline-item" role="listitem">
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-              <span class="timeline-badge" data-i18n="roadmap.s4.badge">Viitor</span>
-              <h3 data-i18n="roadmap.s4.title">Rafinare și securitate</h3>
-              <p data-i18n="roadmap.s4.text">Îmbunătățiri bazate pe feedback real. Audit de securitate, sistem de validare digitală.</p>
-            </div>
-          </div>
-
-          <div class="timeline-item" role="listitem">
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-              <span class="timeline-badge" data-i18n="roadmap.s5.badge">Viitor</span>
-              <h3 data-i18n="roadmap.s5.title">Lansare publică</h3>
-              <p data-i18n="roadmap.s5.text">Disponibil pe iOS și Android. Pregătit pentru adoptare la scară instituțională în Moldova.</p>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="roadmap-footer reveal reveal-delay-3">
-          <p class="roadmap-footer-text" data-i18n="roadmap.open">Proiectul este open-source.</p>
-          <a href="https://github.com/CataragaMihai/eCarnetWebsite" class="roadmap-gh-link" target="_blank" rel="noopener noreferrer">
-            <span data-i18n="roadmap.gh">Urmărește procesul pe GitHub</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-              <path d="M7 17L17 7M17 7H7M17 7v10"/>
-            </svg>
-          </a>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
+    </div>
+  </section>
 
   <!-- FOOTER -->
-  <footer class="footer" role="contentinfo">
-    <div class="container">
-      <div class="footer-top">
-        <div>
-          <a href="#acasa" class="footer-brand">
-            <img src="assets/icon.png" alt="eCarnet" width="26" height="26" />
-            <span>eCarnet</span>
-          </a>
-          <p class="footer-tagline" data-i18n="footer.tagline">Pentru elevii și studenții din Moldova.</p>
-        </div>
-      </div>
+  <footer class="site-footer">
+    <div class="footer-inner">
 
-      <div class="footer-mid">
-        <nav aria-label="Navigare footer">
-          <ul class="footer-nav" role="list">
-            <li><a href="#acasa"    data-i18n="nav.home">Acasă</a></li>
-            <li><a href="#problema" data-i18n="nav.problem">Problema</a></li>
-            <li><a href="#solutie"  data-i18n="nav.solution">Soluția</a></li>
-            <li><a href="#progres"  data-i18n="nav.roadmap">Progres</a></li>
+      <div class="footer-top">
+
+        <!-- Brand + mission -->
+        <div class="footer-col footer-col-brand">
+          <div class="footer-brand">
+            <img src="assets/icon.png" alt="eCarnet" class="footer-icon">
+            <span class="footer-name">eCarnet</span>
+          </div>
+          <p class="footer-tagline" data-i18n="footer.tagline">Carnetul de elev, în format digital. Mai puțină birocrație, mai accesibil pentru elevi</p>
+          <span class="footer-badge" data-i18n="footer.badge">Proiect în dezvoltare</span>
+        </div>
+
+        <!-- Quick navigation -->
+        <nav class="footer-col footer-col-nav" aria-label="Navigare site">
+          <ul class="footer-links footer-links-row">
+            <li><a href="#acasa"    class="footer-link" data-i18n="nav.home">Acasă</a></li>
+            <li><a href="#problema" class="footer-link" data-i18n="nav.problem">Problema</a></li>
+            <li><a href="#solutia"  class="footer-link" data-i18n="nav.solution">Soluția</a></li>
+            <li><a href="#progres"  class="footer-link" data-i18n="nav.progress">Progres</a></li>
           </ul>
         </nav>
-        <div class="footer-links-external">
-          <a href="https://github.com/CataragaMihai" target="_blank" rel="noopener noreferrer" class="footer-ext-link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-            </svg>
-            GitHub
-          </a>
-          <a href="mailto:mihai.cataraga@isa.utm.md" class="footer-ext-link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
-            <span data-i18n="footer.contact">Contactează-mă</span>
-          </a>
+
+        <!-- Contact / links -->
+        <div class="footer-col footer-col-connect">
+          <ul class="footer-links">
+            <li class="footer-contact-item">
+              <svg class="footer-contact-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+              </svg>
+              <span class="footer-contact-text" data-i18n-html="footer.github">Urmărește proiectul pe <a href="https://github.com/CataragaMihai?tab=repositories" class="footer-contact-link" target="_blank" rel="noopener">GitHub</a></span>
+            </li>
+            <li class="footer-contact-item">
+              <svg class="footer-contact-icon" viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M2 3.5h12a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1zm.4 1.3 5.6 4 5.6-4H2.4zM14 6.1l-6 4.3-6-4.3V11.5h12V6.1z"/>
+              </svg>
+              <a href="mailto:mihai.cataraga@isa.utm.md" class="footer-contact-link" data-i18n="footer.contact">Contactează-mă</a>
+            </li>
+          </ul>
         </div>
+
       </div>
 
+      <div class="footer-divider"></div>
+
       <div class="footer-bottom">
-        <p class="footer-copy">&copy; 2026 eCarnet. Toate drepturile rezervate.</p>
-        <div class="footer-attribution">
-          <p class="footer-copy">Dezvoltat de
-            <button class="attribution-trigger" id="attribution-trigger" aria-expanded="false" aria-haspopup="true">Mihai Cataraga</button>
-          </p>
-          <div class="profile-card" id="profile-card" aria-hidden="true" role="dialog">
-            <div class="profile-card-bar">
-              <button class="tl tl-red"    id="pc-close"    aria-label="Close"    title="Close"></button>
-              <button class="tl tl-yellow" id="pc-minimize" aria-label="Minimize" title="Minimize"></button>
-              <button class="tl tl-green"  id="pc-zoom"     aria-label="Zoom" title="Zoom"></button>
-            </div>
-            <div class="profile-card-body">
-              <img src="assets/mihai.jpg" class="profile-card-photo" alt="Mihai Cataraga" width="64" height="64" />
-              <div class="profile-card-info">
-                <strong>Mihai Cataraga</strong>
-                <span>Student UTM, FCIM</span>
-                <span>Fondatorul eCarnet</span>
-                <a href="https://www.linkedin.com/in/mihaicataraga/" target="_blank" rel="noopener noreferrer" class="profile-card-link">LinkedIn ↗</a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <span class="footer-copy" data-i18n="footer.copy">© 2026 eCarnet. Toate drepturile rezervate.</span>
+        <span class="footer-dev"><span data-i18n="footer.dev">Dezvoltat de</span> <span class="dev-card-wrap">
+          <a href="#" class="footer-dev-link">Mihai Cataraga</a>
+          <span class="dev-card" role="tooltip">
+            <span class="dev-card-bar">
+              <button type="button" class="dev-dot dev-dot-red" aria-label="Close"></button>
+              <button type="button" class="dev-dot dev-dot-yellow" aria-label="Minimize"></button>
+              <button type="button" class="dev-dot dev-dot-green" aria-label="Zoom"></button>
+            </span>
+            <span class="dev-card-body">
+              <img src="assets/mihai_pfp.jpg" alt="Mihai Cataraga" class="dev-card-avatar" draggable="false">
+              <span class="dev-card-info">
+                <span class="dev-card-name">Mihai Cataraga</span>
+                <span class="dev-card-role" data-i18n="dev.role">Student UTM</span>
+                <a href="https://www.linkedin.com/in/mihaicataraga/" class="dev-card-link" target="_blank" rel="noopener">LinkedIn</a>
+              </span>
+            </span>
+          </span>
+        </span></span>
       </div>
+
     </div>
   </footer>
 
-  <!-- Floating E -->
-  <aside class="floating-e" id="floating-e" aria-label="Notificări eCarnet">
-    <div class="floating-e-trigger" id="floating-e-trigger">
-      <img src="assets/icon.png" alt="eCarnet" width="78" height="78" />
-    </div>
-    <div class="floating-e-capture" id="floating-e-capture" aria-hidden="true">
-      <p class="capture-heading" data-i18n="capture.heading">Vrei să fii primul care află?</p>
+  <!-- Floating E — draggable email-capture button -->
+  <div class="floating-e" id="floating-e" aria-label="Abonare la noutățile eCarnet" data-i18n-aria="floating.aria">
+    <button class="floating-e-trigger" id="floating-e-trigger" type="button" aria-label="Scrie-te la noutăți" data-i18n-aria="trigger.aria">
+      <img src="assets/icon.png" alt="eCarnet" draggable="false">
+    </button>
+    <div class="floating-e-capture" id="floating-e-capture">
+      <p class="capture-heading" data-i18n="capture.heading">Vrei să fii la curent cu progresul eCarnet?</p>
       <form class="capture-form" id="capture-form" novalidate>
-        <input type="email" class="capture-input" id="capture-email"
-               placeholder="email@tău.com"
-               data-i18n-placeholder="capture.placeholder"
-               autocomplete="email" />
-        <button type="submit" class="capture-submit" data-i18n="capture.cta">Notifică-mă</button>
+        <input type="email" class="capture-input" id="capture-email" placeholder="email@tău.com" data-i18n-placeholder="capture.placeholder" autocomplete="email" required>
+        <button type="submit" class="capture-submit" data-i18n="capture.cta">Scrie-mi!</button>
       </form>
-      <p class="capture-thanks" id="capture-thanks" hidden data-i18n="capture.thanks">Mulțumesc! Te anunț la lansare.</p>
+      <p class="capture-error" id="capture-error" hidden data-i18n="capture.error">Aceasta nu este o adresă de email validă.</p>
+      <p class="capture-thanks" id="capture-thanks" hidden data-i18n="capture.thanks">Mulțumesc pentru email, te vom contacta în curând!</p>
     </div>
-  </aside>
+  </div>
 
-  <!-- SVG filters -->
-  <svg style="position:absolute;width:0;height:0" aria-hidden="true">
-    <filter id="paper-grain">
-      <feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="3" stitchTiles="stitch" result="noise"/>
-      <feColorMatrix type="saturate" values="0" in="noise" result="gray-noise"/>
-      <feBlend in="SourceGraphic" in2="gray-noise" mode="soft-light"/>
-    </filter>
-  </svg>
+  <!-- Hero load gate: hold the skeleton until fonts + the hero image are ready,
+       so the font swap happens behind it. Inline so it isn't blocked by the
+       EmailJS CDN download. Falls back after 3s no matter what. -->
+  <script>
+    (function () {
+      var body = document.body;
+      function fontsReady() { body.classList.add("fonts-ready"); }
+
+      var revealed = false;
+      function reveal() { if (revealed) return; revealed = true; body.classList.add("is-loaded"); }
+
+      var waits = [];
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(fontsReady);
+        waits.push(document.fonts.ready);
+      } else {
+        fontsReady();
+      }
+
+      var img = document.querySelector(".hero-phone-mockup");
+      if (img && !img.complete) {
+        waits.push(new Promise(function (res) {
+          img.addEventListener("load", res);
+          img.addEventListener("error", res);
+        }));
+      }
+
+      Promise.all(waits).then(reveal);
+      setTimeout(reveal, 3000); // safety net
+    })();
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
