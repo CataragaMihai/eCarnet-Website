@@ -397,17 +397,32 @@ if (devWrap && devCard) {
 // ============================================
 // Floating "E" — draggable email-capture button.
 // Hidden over the hero, pops in from the corner once you scroll past it.
-// Draggable with magnetic corner-snap; hover/tap opens a signup card that sends
-// the email to me via EmailJS.
+// Draggable with magnetic corner-snap; hover/tap opens a signup card that POSTs
+// the email to the Cloudflare Worker proxy (which sends it on via Resend).
 // ============================================
 (function () {
-  var EMAILJS_PUBLIC_KEY  = "JcHMwo9MQ774aS1ec";
-  var EMAILJS_SERVICE_ID  = "service_ovj1n8b";
-  var EMAILJS_TEMPLATE_ID = "template_6en3rbs";
+  // Signups POST to our Cloudflare Worker proxy. All the real protection — origin
+  // check, honeypot, per-IP rate limit, and the SECRET email key (Resend) — lives
+  // server-side in the Worker. No credential ships in this file anymore.
+  var WORKER_URL = "https://ecarnet-mail.mihaicataraga.workers.dev";
 
-  if (typeof emailjs !== "undefined") {
-    try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); }
-    catch (err) { console.warn("EmailJS init failed:", err); }
+  // Kill switch: flip to false and redeploy to disable the signup form.
+  var CAPTURE_ENABLED = true;
+
+  // Optional client-side rate limit, purely for instant UX feedback. The Worker
+  // enforces the authoritative per-IP limit server-side.
+  var MAX_SENDS = 10;
+  var WINDOW_MS = 60 * 60 * 1000;   // 1 hour
+  var RATE_KEY  = "ecarnet-send-log";
+
+  function recentSends() {
+    var now = Date.now(), log = [];
+    try { log = JSON.parse(localStorage.getItem(RATE_KEY) || "[]"); } catch (e) {}
+    return log.filter(function (t) { return now - t < WINDOW_MS; });
+  }
+  function recordSend(log) {
+    log.push(Date.now());
+    try { localStorage.setItem(RATE_KEY, JSON.stringify(log)); } catch (e) {}
   }
 
   var floatingE = document.getElementById("floating-e");
@@ -617,29 +632,41 @@ if (devWrap && devCard) {
     if (e.key === "Escape" && isOpen) { closeMenu(); trigger.focus(); }
   });
 
-  // Email capture → EmailJS
+  // Email capture → Cloudflare Worker proxy
   var form    = document.getElementById("capture-form");
   var thanks  = document.getElementById("capture-thanks");
   var errorEl = document.getElementById("capture-error");
   var heading = floatingE.querySelector(".capture-heading");
+  var rateEl  = document.getElementById("capture-rate");
+  var hpField = document.getElementById("capture-hp");
   var submitted = false;
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function syncCapture() {
     if (heading) heading.style.display = submitted ? "none" : "";
     if (form)    form.style.display    = submitted ? "none" : "";
-    if (errorEl && submitted) errorEl.hidden = true;
+    if (submitted) { if (errorEl) errorEl.hidden = true; if (rateEl) rateEl.hidden = true; }
     if (thanks)  thanks.hidden = !submitted;
   }
 
-  // Clear the error as soon as the user edits the field.
-  if (emailInput && errorEl) {
-    emailInput.addEventListener("input", function () { errorEl.hidden = true; });
+  // Clear both messages as soon as the user edits the field.
+  if (emailInput) {
+    emailInput.addEventListener("input", function () {
+      if (errorEl) errorEl.hidden = true;
+      if (rateEl)  rateEl.hidden  = true;
+    });
   }
 
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      if (!CAPTURE_ENABLED) return;                 // feature killed
+
+      // Honeypot tripped → it's a bot. Silently fake success (no send).
+      if (hpField && hpField.value.trim() !== "") {
+        submitted = true; syncCapture(); return;
+      }
+
       var email = emailInput ? emailInput.value.trim() : "";
       if (!EMAIL_RE.test(email)) {              // not a valid address — flag and bail
         if (errorEl) errorEl.hidden = false;
@@ -647,10 +674,20 @@ if (devWrap && devCard) {
         return;
       }
       if (errorEl) errorEl.hidden = true;
-      try {
-        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { email: email, name: "eCarnet Visitor" })
-          .catch(function (err) { console.error("EmailJS error:", err); });
-      } catch (err) { console.error("EmailJS send exception:", err); }
+
+      // Rate limit: cap sends per rolling hour.
+      var log = recentSends();
+      if (log.length >= MAX_SENDS) {
+        if (rateEl) rateEl.hidden = false;
+        return;
+      }
+      recordSend(log);
+
+      fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email })
+      }).catch(function (err) { console.error("signup error:", err); });
       submitted = true;
       syncCapture();
     });

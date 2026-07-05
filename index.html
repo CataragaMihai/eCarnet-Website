@@ -512,16 +512,18 @@
       <p class="capture-heading" data-i18n="capture.heading">Vrei să fii la curent cu progresul eCarnet?</p>
       <form class="capture-form" id="capture-form" novalidate>
         <input type="email" class="capture-input" id="capture-email" placeholder="email@tău.com" data-i18n-placeholder="capture.placeholder" autocomplete="email" required>
+        <!-- Honeypot: hidden from humans; bots that fill every field trip it and are silently dropped. -->
+        <input type="text" class="capture-hp" id="capture-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
         <button type="submit" class="capture-submit" data-i18n="capture.cta">Scrie-mi!</button>
       </form>
       <p class="capture-error" id="capture-error" hidden data-i18n="capture.error">Aceasta nu este o adresă de email validă.</p>
+      <p class="capture-error" id="capture-rate" hidden data-i18n="capture.rate">Ai trimis prea multe mesaje. Încearcă din nou mai târziu.</p>
       <p class="capture-thanks" id="capture-thanks" hidden data-i18n="capture.thanks">Mulțumesc pentru email, te vom contacta în curând!</p>
     </div>
   </div>
 
   <!-- Hero load gate: hold the skeleton until fonts + the hero image are ready,
-       so the font swap happens behind it. Inline so it isn't blocked by the
-       EmailJS CDN download. Falls back after 3s no matter what. -->
+       so the font swap happens behind it. Falls back after 3s no matter what. -->
   <script>
     (function () {
       var body = document.body;
@@ -551,7 +553,6 @@
     })();
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/main.js"></script>
 </body>

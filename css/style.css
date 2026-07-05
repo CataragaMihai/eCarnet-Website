@@ -1788,6 +1788,17 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
 .capture-input::placeholder { color: #435c72; }
 .capture-input:focus { border-color: #0072d2; }
 
+/* Honeypot — kept in the DOM (bots fill it) but off-screen and unfocusable so no
+   human ever sees or tabs to it. */
+.capture-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .capture-submit {
   align-self: center;
   height: 37px;

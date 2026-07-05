@@ -82,6 +82,7 @@ window.I18N = {
     "capture.placeholder": "email@tău.com",
     "capture.cta": "Scrie-mi!",
     "capture.error": "Aceasta nu este o adresă de email validă.",
+    "capture.rate": "Ai trimis prea multe mesaje. Încearcă din nou mai târziu.",
     "capture.thanks": "Mulțumesc pentru email, te vom contacta în curând!",
     "floating.aria": "Abonare la noutățile eCarnet",
     "trigger.aria": "Scrie-te la noutăți"
@@ -165,6 +166,7 @@ window.I18N = {
     "capture.placeholder": "your@email.com",
     "capture.cta": "Notify me!",
     "capture.error": "That's not a valid email address.",
+    "capture.rate": "You've sent too many messages. Please try again later.",
     "capture.thanks": "Thanks for your email — we'll be in touch soon!",
     "floating.aria": "Subscribe to eCarnet updates",
     "trigger.aria": "Sign up for updates"
@@ -248,6 +250,7 @@ window.I18N = {
     "capture.placeholder": "почта@пример.com",
     "capture.cta": "Напиши мне!",
     "capture.error": "Это недействительный адрес электронной почты.",
+    "capture.rate": "Вы отправили слишком много сообщений. Попробуйте позже.",
     "capture.thanks": "Спасибо за письмо — скоро свяжемся с тобой!",
     "floating.aria": "Подписка на новости eCarnet",
     "trigger.aria": "Подписаться на новости"
