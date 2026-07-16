@@ -1,7 +1,7 @@
 /* ── RESET ─────────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 body {
-  background: #042137;
+  background: var(--navy);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -31,7 +31,70 @@ body.lang-switching {
    This is what makes the page scale smoothly instead of jumping at breakpoints. */
 :root {
   --side-pad: clamp(24px, 9.6vw - 29.5px, 96px);
+  /* Premium solid navy — the hero/navbar ground. Deliberately a flat color
+     (no gradient washes, no ambient glow): depth comes from element lighting
+     (phone glow, icon bloom), not from the backdrop. */
+  --navy: #0A1428;
+  /* Warm secondary accent — the "present/active" signal. Already used on the
+     "Acum" timeline pill; promoted to a token so it can carry that meaning
+     consistently (open FAQ item) instead of the whole page riding one blue. */
+  --accent-warm: #ECA817;
+
+  /* ── TYPE ───────────────────────────────────────────────
+     Two voices, split along the product's own story: the serif speaks as the
+     document (the carnet — official, issued, permanent), the sans speaks as the
+     app (UI, labels, body). Headlines and section headings are the document
+     asking a question; everything the user reads or clicks is the app answering.
+
+     Both faces carry cyrillic + latin-ext, so RO/EN/RU all render in the real
+     font. Fleur De Leah is Latin-only but only ever sets the four card numerals,
+     so it never meets a Cyrillic glyph. Georgia is the metric-nearest fallback
+     for Literata; system-ui for Geist. */
+  --font-display: 'Literata', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-script: 'Fleur De Leah', cursive;
+
+  /* ── HERO STAGE GEOMETRY ────────────────────────────────
+     The phone is centred on the hero, so the west column is whatever is left
+     between the page edge and the phone. These three values are the only knobs.
+     --phone-fill is read by js/hero3d.js to frame the camera — change it here,
+     not there, or the reserved column and the rendered phone drift apart. */
+  --phone-fill: 0.66;                                   /* share of hero height */
+  --phone-w: calc(var(--phone-fill) * 100vh * 0.5);     /* body aspect ~0.5 */
+  /* Clearance, text → phone. Scaled to the headline, not to taste: "eCarnet?"
+     renders ~105px, and a display word that size needs ~0.6× its cap height of
+     air before the next object or it reads as a collision. */
+  --hero-gap: 96px;
+  /* Clearance on the phone's east side, independent of the west. The headline
+     deliberately overruns its column, so --hero-gap no longer describes the west
+     gap you actually see; the east side had no such overrun and was reading far
+     airier than the west. This closes it. */
+  --hero-gap-east: 60px;
+  /* How far east of the section's centre line the phone sits. The west column
+     gains exactly this, the east column gives up exactly this, so the three
+     stay locked together — never shift one without the other two.
+     0 = phone centred on the viewport. */
+  --phone-shift: 48px;
 }
+
+/* Literata is a variable font with an optical-size axis: let the browser pick
+   finer contrast at display sizes and sturdier shapes at text sizes. */
+:where(h1, h2, h3, .hero-headline, .problem-heading, .progress-heading,
+       .solution-heading, .faq-heading) {
+  font-optical-sizing: auto;
+  font-kerning: normal;
+}
+
+/* Keyboard focus only (mouse/touch never see it). One ring that stays visible
+   on both the navy sections and the cream ones. Outline follows each element's
+   own border-radius in modern browsers, so pills/buttons round correctly. */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid #0a8cff;
+  outline-offset: 3px;
+}
+.cta-btn:focus-visible,
+.faq-q:focus-visible,
+.capture-submit:focus-visible { outline-offset: 4px; }
 
 /* ── NAVBAR ────────────────────────────────────────────── */
 .navbar {
@@ -41,13 +104,12 @@ body.lang-switching {
   right: 0;
   z-index: 100;
   height: 60px;
-  background: rgba(4, 33, 55, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 0.5px solid rgba(5, 55, 82, 0.6);
-  /* Pin the navbar to its own stable compositing layer so the backdrop-filter
-     glass (and the text on it) isn't re-rasterized — and flicker away — during
-     fast scroll jumps. */
+  /* Solid — no glass. Matches the hero exactly so the bar is seamless at the
+     top and reads as a clean plate once content scrolls under it. */
+  background: var(--navy);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  /* Own compositing layer so the bar (and its text) isn't re-rasterized —
+     and flicker away — during fast scroll jumps. */
   transform: translateZ(0);
   backface-visibility: hidden;
 }
@@ -62,7 +124,7 @@ body.lang-switching {
 
 /* Brand */
 .nav-brand {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 22px;
   color: #f5f5f5;
@@ -73,24 +135,25 @@ body.lang-switching {
   align-items: center;
 }
 
-/* Brand collapse: "eCarnet" shrinks down to its leading "e", which then
-   cross-dissolves into the e+cap mark. The "e" is the pivot — "Carnet" retracts
-   into it, then the e gains its cap. */
+/* Brand morph (reversed): the capped-e mark greets you over the hero, then
+   morphs into the "eCarnet" wordmark once you scroll past it. The mark
+   cross-dissolves into the leading "e", which then unrolls "Carnet". */
 .brand-text {
   display: inline-flex;
-  overflow: hidden;          /* clips "Carnet" as it retracts */
+  overflow: hidden;          /* clips "Carnet" as it unrolls/retracts */
   white-space: nowrap;
 }
 
 .brand-e {
-  opacity: 1;
+  opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .brand-rest {
   display: inline-block;
-  max-width: 6ch;            /* enough to hold "Carnet" */
-  opacity: 1;
+  max-width: 0;              /* retracted at rest; 6ch holds "Carnet" when open */
+  opacity: 0;
+  transform: translateX(-6px);
   transform-origin: left center;
   transition: max-width 0.45s cubic-bezier(0.2, 0, 0, 1),
               opacity   0.3s  ease,
@@ -99,14 +162,14 @@ body.lang-switching {
 
 .brand-mark {
   position: absolute;
-  left: -10px;               /* slide west so the capped-e lands where "eCarnet" began */
+  left: -10px;               /* slide west so the capped-e sits where "eCarnet" begins */
   top: 50%;
   display: flex;
-  opacity: 0;
+  opacity: 1;
   /* -50% centers vertically; the extra -2px is an optical nudge up (it reads low
      when geometrically centered) */
-  transform: translateY(calc(-50% - 2px)) scale(0.7);
-  filter: blur(3px);
+  transform: translateY(calc(-50% - 2px)) scale(1);
+  filter: blur(0);
   pointer-events: none;
   transition: opacity   0.3s cubic-bezier(0.2, 0, 0, 1),
               transform 0.3s cubic-bezier(0.2, 0, 0, 1),
@@ -119,21 +182,21 @@ body.lang-switching {
   height: 34px;
 }
 
-/* Scrolled: retract "Carnet" into the "e", then hand the "e" off to the mark */
+/* Scrolled: the mark hands off to the "e", which unrolls "Carnet" */
 .navbar.scrolled .brand-rest {
-  max-width: 0;
-  opacity: 0;
-  transform: translateX(-6px);
+  max-width: 6ch;
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .navbar.scrolled .brand-e {
-  opacity: 0;
+  opacity: 1;
 }
 
 .navbar.scrolled .brand-mark {
-  opacity: 1;
-  transform: translateY(calc(-50% - 2px)) scale(1);
-  filter: blur(0);
+  opacity: 0;
+  transform: translateY(calc(-50% - 2px)) scale(0.7);
+  filter: blur(3px);
 }
 
 /* Nav links */
@@ -168,7 +231,7 @@ body.lang-switching {
 .nav-underline.is-active { opacity: 1; }
 
 .nav-link {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 18px;
   color: #f5f5f5;
@@ -226,7 +289,7 @@ body.lang-switching {
 .lang-btn {
   flex: 1;
   height: 100%;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 15px;
   color: #f5f5f5;
@@ -248,63 +311,185 @@ body.lang-switching {
 /* ── HERO ──────────────────────────────────────────────── */
 .hero {
   min-height: 100vh;
-  background: #042137;
+  background: var(--navy);
   display: flex;
-  align-items: flex-start;
-  padding-top: 60px;
+  align-items: center;
+  /* Must stay symmetric. The 3D stage is inset:0 over the whole section, so the
+     phone sits on the section's centre line; any asymmetry here moves the text's
+     centre line off it. 60px = the fixed navbar the top of the content clears. */
+  padding: 60px 0;
 }
 
 .hero-inner {
+  position: relative;   /* containing block for the centred 3D stage */
   width: 100%;
-  max-width: 1312px;
+  /* Full-bleed, unlike the 1312px grid the sections below sit on. The hero is a
+     stage: the phone must be centred on the *viewport*, and capping the hero at
+     1312px would squeeze the west column so hard the headline could never pass
+     ~123px however small the phone got. */
+  max-width: none;
   margin: 0 auto;
-  padding: 72px var(--side-pad) 0;
+  padding: 0 var(--side-pad);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: clamp(32px, 5vw, 72px);
+}
+
+/* ── 3D STAGE ──────────────────────────────────────────────
+ * The canvas spans the whole hero and three.js frames the phone dead-centre,
+ * so the model is centred on the *section*, not on a column. The text column
+ * then floats over its left side. pointer-events are off so the canvas never
+ * swallows a click on the CTA — hero3d.js listens on window instead. */
+.hero-stage {
+  position: absolute;
+  /* Full width, but slid east by --phone-shift. three.js draws the phone at the
+     canvas centre, so moving the box is what moves the phone. Not a transform:
+     the load-in fadeUp animation already owns this element's transform. */
+  top: 0;
+  bottom: 0;
+  left: var(--phone-shift);
+  right: calc(-1 * var(--phone-shift));
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  /* The stage is pointer-events:none so it never swallows a CTA click. The canvas
+     opts back in so the phone can be grabbed — it sits at z-index 1 under the
+     text columns (z-index 1, later in paint order), so the copy still wins.
+     hero3d.js raycasts and only reacts when the pointer is actually on the model.
+     pan-y keeps vertical scrolling alive on touch while a horizontal drag spins. */
+  pointer-events: auto;
+  touch-action: pan-y;
+  /* The ::before glow is positioned, so without a z-index here it would paint
+     *over* the canvas and smother the phone (it did). The canvas is transparent,
+     so the glow still reads through it, behind the phone, as intended. */
+  position: relative;
+  z-index: 1;
+}
+
+/* Poster: what everyone sees until WebGL has the model, and what phones,
+   reduced-motion users and no-WebGL browsers keep seeing.
+   Scoped through .hero-stage so it outranks the generic .hero-phone-mockup
+   rules further down (which set position:relative, a width clamp and the float
+   animation — all of which are for the solution section's copy of this image). */
+.hero-stage .hero-phone-poster {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Sized off the same token the text columns are subtracted from, so the poster
+     occupies exactly the gap they leave. At height:72% it rendered 318px wide
+     against a 279px token and overlapped the headline. */
+  width: var(--phone-w);
+  height: auto;
+  opacity: 1;
+  z-index: 1;        /* above the ::before glow, same as the canvas */
+  animation: none;   /* the 3D phone does its own motion */
+  transition: opacity 0.6s ease;
+}
+
+.hero-stage.is-live .hero-canvas { opacity: 1; }
+.hero-stage.is-live .hero-phone-poster { opacity: 0; }
+.hero-stage.is-poster .hero-canvas { display: none; }
+
+/* Model arrived before the skeleton lifted, so the poster was never on screen.
+   Cross-fading from something nobody saw just veils the phone's entrance —
+   swap instantly instead. The stage's own fadeUp still carries the reveal. */
+.hero-stage.is-instant .hero-canvas,
+.hero-stage.is-instant .hero-phone-poster { transition: none; }
+
+/* The old .hero-mockup-col::before bloom is gone on purpose. It was a positioned
+   pseudo-element over a static canvas, so it painted *on top of* the phone and
+   dropped the lit screen from rgb(42,128,255) to rgb(11,25,50). The 3D key/rim
+   lights and the emissive screen already supply the glow. */
+
+/* The two text columns are the room left either side of the centred phone.
+   Explicit widths (not max-width) so the container query below has something
+   stable to resolve against, and so neither column can drift under the phone. */
+.hero-text,
+.hero-desc {
+  position: relative;
+  z-index: 1;   /* over the canvas */
+}
+
+/* The phone sits --phone-shift east of centre, so the room either side of it is
+   no longer symmetric: west takes the shift, east returns it. */
+.hero-text {
+  width: calc(50% - (var(--phone-w) / 2) - var(--hero-gap) + var(--phone-shift));
+}
+
+.hero-desc {
+  width: calc(50% - (var(--phone-w) / 2) - var(--hero-gap-east) - var(--phone-shift));
 }
 
 .hero-text {
   display: flex;
   flex-direction: column;
-  margin-top: -48px;   /* nudge the text up from the vertical center */
+  container-type: inline-size;   /* the headline sizes off this column */
+}
+
+/* East column. margin-left:auto pushes it to the far side, so the phone keeps
+   the middle to itself. */
+.hero-desc {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 /* headline */
 .hero-headline {
-  display: block;        /* inline flow so the gradient sits on the same line */
-  line-height: 0.97;
-  margin-bottom: 30px;
+  /* Sized by the column, not the viewport. The binding line is the accent word:
+     "eCarnet?" in Geist 900 at -0.042em measures 4.55× its font-size (measured
+     off the font binary; real rendering is ~1.3% narrower once GPOS kerning
+     applies). Fitting it inside the column exactly would mean 22.0cqw.
+     25.1cqw deliberately overruns the column by ~50px, spending part of the
+     --hero-gap clearance to buy a bigger word — the phone still keeps ~64px.
+     Coupled to --phone-fill: a bigger phone narrows this column, which would
+     shrink the headline unless this coefficient rises to match.
+     Re-derive it if the weight, tracking, word, or phone size ever changes. */
+  --headline-size: clamp(40px, 25.1cqw, 152px);
+  display: block;
+  line-height: 0.94;     /* tight — Geist's caps are shallow at this size */
+  /* Reads ~24px tighter than it measures: at line-height 0.94 the accent word's
+     ink hangs below the h1's box, so the optical gap to the CTA is 32+48-24. */
+  margin-bottom: 32px;
 }
 
 .headline-white {
-  font-family: 'Fira Sans Condensed', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 900;
-  font-size: clamp(64px, 5.85vw + 23px, 105px);
-  font-style: normal;
+  /* Deliberately subordinate to the brand word below it — this line is the
+     lead-in, not the claim. */
+  font-size: calc(var(--headline-size) * 0.56);
+  letter-spacing: -0.035em;
   color: #f5f5f5;
 }
 
+/* ── HEADLINE ACCENT WORD ──────────────────────────────────
+ * "eCarnet?" — the word Mihai wants to carry a special effect.
+ * DROP THE EFFECT IN HERE. Everything below the `background:` line is the
+ * placeholder gradient fill and is meant to be replaced wholesale. */
 .headline-gradient {
-  font-family: 'Fira Sans Condensed', sans-serif;
-  font-weight: 800;
-  font-size: clamp(64px, 5.85vw + 23px, 105px);
-  font-style: normal;
-  line-height: 1.1;
-  padding-bottom: 8px;
-  white-space: nowrap;   /* keep the accent phrase ("acum digital!") unbroken */
+  font-family: var(--font-sans);
+  font-weight: 900;
+  font-size: var(--headline-size);
+  /* Heavier cuts set optically looser, so 900 wants more negative tracking than
+     800 did just to look equally tight. It also claws back most of the width the
+     extra weight costs. */
+  letter-spacing: -0.042em;
+  line-height: inherit;
+  padding: 0 0.06em 0.06em 0;   /* room for the "?" terminal, no swashes to clear */
+  white-space: nowrap;   /* keep the accent word ("eCarnet?") unbroken */
   background: radial-gradient(50% 50% at 50% 50%, #0072D2 0%, #00BEFF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.hero-mockup-col {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .hero-phone-mockup {
@@ -328,20 +513,34 @@ body.lang-switching {
 }
 
 .solution-heading {
-  font-family: 'Fira Sans Condensed', sans-serif;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: clamp(28px, 2.2vw + 11px, 42px);
-  font-style: normal;
   color: #0e2f44;
-  line-height: 0.97;
-  margin-bottom: 40px;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  margin-bottom: 14px;
   text-wrap: balance;
 }
 
+/* Section subtitle, same rank and treatment as .problem-subtitle and
+   .progress-subtitle — serif heading, sans deck. Colour is a desaturated step
+   off the heading navy rather than a neutral grey, so it stays in the palette. */
+.solution-subtitle {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(17px, 0.9vw + 10px, 23px);
+  color: #5a7183;
+  line-height: 1.5;
+  max-width: 62ch;
+  margin-bottom: 40px;
+  text-wrap: pretty;
+}
+
 /* Punctuation is added in CSS so the one translated string can read as a
-   sentence on desktop (period, appended to the heading) and as a label on
-   mobile (colon, its own heading). */
-.solution-heading-extra::after { content: "."; }
+   sentence on desktop (period, after the subtitle) and as a label on mobile
+   (colon, where it becomes its own heading). */
+.solution-subtitle::after { content: "."; }
 
 .solution-layout {
   display: flex;
@@ -351,6 +550,29 @@ body.lang-switching {
 
 .mockup-col {
   flex-shrink: 0;
+  /* Give the orbit a defined column (wider than its 260px) so it sits centered
+     in a balanced stage against the taller feature stack, instead of hugging
+     the far edge. The scroll-drift still has room to travel. */
+  flex-basis: clamp(300px, 30vw, 380px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Soft light-court behind the orbit — turns the surrounding whitespace into a
+   deliberate platform. Sits under the ring/icon (z-index:0). */
+.mockup-col::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 360px;
+  height: 360px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(0, 114, 210, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .features-col {
@@ -378,14 +600,14 @@ body.lang-switching {
 }
 
 .feature-title {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   font-size: 22px;
   color: #000;
 }
 
 .feature-desc {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 18px;
   color: #000;
@@ -401,18 +623,71 @@ body.lang-switching {
 }
 
 .tag {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 16px;
   color: #5a96c4;
   border: 1px solid rgba(90, 150, 196, 0.45);
   border-radius: 20px;
-  padding: 4px 14px;
+  /* Left padding is LARGER than right, not smaller. The 20px radius means the
+     left edge is a curve, not a wall — an icon set flush to the text's padding
+     crowds that curve, while a letter's flat left side does not. */
+  padding: 4px 14px 4px 15px;
   background: rgba(90, 150, 196, 0.06);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   transition: color        0.22s cubic-bezier(0.2, 0, 0, 1),
               border-color 0.22s cubic-bezier(0.2, 0, 0, 1),
               background    0.22s cubic-bezier(0.2, 0, 0, 1),
               transform     0.16s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.tag-icon {
+  /* 1em next to lowercase text reads undersized — the letters only fill their
+     x-height, the icon fills its whole box. 1.2em is the floor at which a
+     multi-stroke glyph (the bus) stays legible. */
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+  fill: none;
+  /* The pill already transitions `color` on hover; the stroke rides it for free. */
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;   /* round caps sit a hair outside the viewBox */
+}
+
+/* Draw-on. dasharray:1 against pathLength:1 means one dash covers the whole path,
+   so offset 0 = drawn, 1 = erased, 2 = drawn again. Animating to 2 retraces it,
+   and hovering out reverses cleanly — it ends visible either way. */
+.tag-icon path,
+.tag-icon rect,
+.tag-icon circle:not(.ico-wheel) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Strokes redraw in sequence rather than all at once. */
+.tag-icon :nth-child(2) { transition-delay: 60ms; }
+.tag-icon :nth-child(3) { transition-delay: 120ms; }
+.tag-icon :nth-child(4) { transition-delay: 180ms; }
+
+/* The wheels are filled, not stroked, so a dash offset would do nothing to them.
+   They pulse instead, so they don't sit dead while the body retraces. */
+.tag-icon .ico-wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.34s cubic-bezier(0.34, 1.7, 0.6, 1);
+}
+.tag:hover .tag-icon .ico-wheel { transform: scale(0.55); }
+
+.tag:hover .tag-icon path,
+.tag:hover .tag-icon rect,
+.tag:hover .tag-icon circle:not(.ico-wheel) {
+  stroke-dashoffset: 2;
 }
 
 .tag:hover {
@@ -426,12 +701,132 @@ body.lang-switching {
   transform: scale(0.96);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .tag-icon path,
+  .tag-icon circle { transition: none; }
+}
+
 .feature-icon {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0.75;
+  color: #111;   /* what the SVG strokes inherit — was hard-coded per-path */
+  transition: opacity 0.25s cubic-bezier(0.2, 0, 0, 1),
+              color   0.25s cubic-bezier(0.2, 0, 0, 1),
+              transform 0.35s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* An <svg> clips to its viewBox by default. The chat bubble springs past scale(1)
+   from a bottom-left origin, so its overshoot crossed x=24 and got sliced off
+   mid-pop. Nothing else clips — .feature-card is rounded but not overflow:hidden. */
+.feature-icon svg { overflow: visible; }
+
+/* Driven off the whole card. A 28px icon is far too small to be its own hover
+   target, and the icon sits opposite the text it belongs to. */
+.feature-card:hover .feature-icon {
+  opacity: 1;
+  color: #0072d2;
+  transform: scale(1.14) translateY(-2px);
+}
+
+/* Every animated shape below scales about its OWN box. Without
+   transform-box:fill-box, transform-origin resolves against the SVG's user space
+   and the covers swing around the icon's corner instead of the spine. */
+.icon-book .ico-half,
+.icon-book .ico-lines,
+.icon-calendar .ico-date,
+.icon-account .ico-bubble,
+.icon-account .ico-dot { transform-box: fill-box; }
+
+/* ── book: closes and opens ────────────────────────────────
+ * Scaling each half toward the spine foreshortens it exactly as a real cover does
+ * when it swings shut. rotateY would be truer, but SVG children can't hold a 3D
+ * context in most browsers, so the perspective would silently collapse. */
+.icon-book .ico-half:nth-of-type(1) { transform-origin: right center; }
+.icon-book .ico-half:nth-of-type(2) { transform-origin: left center; }
+
+@keyframes book-close-open {
+  0%   { transform: scaleX(1); }
+  42%  { transform: scaleX(0.03); }    /* shut tight */
+  78%  { transform: scaleX(1.07); }    /* springs past open */
+  100% { transform: scaleX(1); }
+}
+
+/* The lines have to vanish while the page is edge-on — a 3% wide cover with text
+   still legible on it is the tell that this is a fake fold. */
+@keyframes book-lines {
+  0%   { opacity: 0.62; }
+  28%  { opacity: 0; }
+  62%  { opacity: 0; }
+  100% { opacity: 0.62; }
+}
+
+.icon-book .ico-lines { opacity: 0.62; }
+
+.feature-card:hover .icon-book .ico-half {
+  animation: book-close-open 1.15s cubic-bezier(0.62, 0, 0.2, 1);
+}
+/* The far cover trails the near one — a book doesn't shut both halves at once. */
+.feature-card:hover .icon-book .ico-half:nth-of-type(2) { animation-delay: 90ms; }
+
+.feature-card:hover .icon-book .ico-lines {
+  animation: book-lines 1.15s cubic-bezier(0.62, 0, 0.2, 1);
+}
+.feature-card:hover .icon-book .ico-half:nth-of-type(2) .ico-lines { animation-delay: 90ms; }
+
+/* ── calendar: dates pop in ────────────────────────────────
+ * Visible at rest so the icon still reads as a calendar; the hover re-pops them. */
+.icon-calendar .ico-date { transform-origin: center; }
+
+@keyframes date-pop {
+  0%   { transform: scale(0) translateY(2px); opacity: 0; }
+  55%  { transform: scale(1.45) translateY(-1px); opacity: 1; }
+  75%  { transform: scale(0.92); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.feature-card:hover .icon-calendar .ico-date {
+  animation: date-pop 0.62s cubic-bezier(0.2, 0, 0, 1) backwards;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+/* ── account: a chat bubble arrives and types ──────────────
+ * Hidden at rest, so the icon reads as a person, not a person-and-a-box. */
+.icon-account .ico-bubble {
+  transform-origin: left bottom;   /* grows out of its own tail */
+  transform: scale(0);
+  opacity: 0;
+  /* Overshoot past 1 — the bubble lands like it was thrown, not faded in. */
+  transition: transform 0.42s cubic-bezier(0.34, 1.8, 0.5, 1), opacity 0.18s ease;
+}
+
+.feature-card:hover .icon-account .ico-bubble {
+  transform: scale(1);
+  opacity: 1;
+}
+
+@keyframes dot-type {
+  0%, 65%, 100% { transform: translateY(0);      opacity: 0.35; }
+  30%           { transform: translateY(-2.4px); opacity: 1; }
+}
+
+.feature-card:hover .icon-account .ico-dot {
+  animation: dot-type 0.9s ease-in-out infinite;
+  animation-delay: 0.3s;   /* wait for the bubble to land */
+}
+.feature-card:hover .icon-account .ico-dot:nth-of-type(2) { animation-delay: 0.45s; }
+.feature-card:hover .icon-account .ico-dot:nth-of-type(3) { animation-delay: 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-icon { transition: none; }
+  .feature-card:hover .feature-icon { transform: none; }
+  .feature-card:hover .icon-book .ico-half,
+  .feature-card:hover .icon-book .ico-lines,
+  .feature-card:hover .icon-calendar .ico-date,
+  .feature-card:hover .icon-account .ico-dot { animation: none; }
+  .icon-account .ico-bubble { transition: none; }
 }
 
 /* ── PROBLEM ───────────────────────────────────────────── */
@@ -451,14 +846,44 @@ body.lang-switching {
 }
 
 .problem-heading {
-  font-family: 'Fira Sans Condensed', sans-serif;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: clamp(32px, 4.45vw, 60px);
-  font-style: normal;
   color: #f5f5f5;
-  line-height: 0.97;
-  margin-bottom: 48px;
+  /* 0.97 was tuned for a condensed sans with shallow descenders. Literata's
+     descenders collide at anything under ~1.05. */
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  margin-bottom: 14px;
   text-wrap: balance;
+}
+
+/* "eCarnet?" set in Playfair Display italic — a high-contrast display serif, so it
+   reads as a glossy, fashion-serif accent against Literata's softer book serif. The
+   italic slant is what makes it register as a distinct word rather than blending
+   into the upright heading. The accent word is Latin in every language. */
+.problem-heading .script-accent {
+  font-family: 'Playfair Display', var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  /* Playfair has a near-full x-height, so it only needs a small bump to feel like a
+     display accent rather than a size match. */
+  font-size: 1.16em;
+  color: #cfe4f5;
+  letter-spacing: 0;
+  padding: 0 0.03em;
+  white-space: nowrap;
+}
+
+.problem-subtitle {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(17px, 0.9vw + 10px, 23px);
+  color: #b4d0e7;
+  line-height: 1.5;
+  max-width: 62ch;
+  margin-bottom: 44px;
+  text-wrap: pretty;
 }
 
 .problem-grid {
@@ -505,7 +930,7 @@ body.lang-switching {
 }
 
 .card-num {
-  font-family: 'Fleur De Leah', cursive;
+  font-family: var(--font-script);
   font-size: clamp(56px, 2.95vw + 33.4px, 75px);
   color: #b4d0e7;
   line-height: 0.97;
@@ -523,7 +948,7 @@ body.lang-switching {
 }
 
 .card-title {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   font-size: clamp(24px, 1.85vw + 9.4px, 36px);
   color: #b4d0e7;
@@ -539,11 +964,11 @@ body.lang-switching {
 }
 
 .card-desc {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: clamp(16px, 0.93vw + 8.9px, 22px);
   color: #f5f5f5;
-  line-height: 1.5;
+  line-height: 1.55;
   text-align: left;
   text-wrap: pretty;
   transition: text-shadow 0.3s ease;
@@ -572,21 +997,23 @@ body.lang-switching {
 }
 
 .progress-heading {
-  font-family: 'Fira Sans Condensed', sans-serif;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: clamp(30px, 3.45vw + 3.4px, 52px);
-  font-style: normal;
   color: #f5f5f5;
-  line-height: 0.97;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
   margin-bottom: 14px;
   text-wrap: balance;
 }
 
 .progress-subtitle {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: clamp(16px, 0.8vw + 9.5px, 21px);
   color: #b4d0e7;
+  line-height: 1.5;
+  max-width: 62ch;
   margin-bottom: 48px;
   text-wrap: pretty;
 }
@@ -610,27 +1037,22 @@ body.lang-switching {
   --tl-item-gap:        20px;   /* gap between stacked items inside one stop     */
   --tl-content-width:   250px;  /* width of each text column                     */
   --tl-item-line-gap:   5px;    /* gap between an item's title and its desc      */
-  --tl-track-end-nudge: 24px;   /* extends the rail a touch into the last pill   */
+  --tl-track-end-nudge: 24px;   /* tucks the rail's end under the last pill      */
 
-  /* x-offset of the rail's right end from the screen's right edge. Pulled into
-     its own variable so the faded continuation can start exactly where the
-     solid rail ends. */
-  --tl-track-end-right: calc((100vw + var(--tl-side-inset)) / 3 - var(--tl-track-end-nudge));
-
-  /* ── Continuation tail ("…more may follow") ───── */
-  /* Capped so the "?" never pokes past the right screen edge on narrow windows */
-  --tl-tail-length:     min(300px, calc(var(--tl-track-end-right) - 40px));
-  --tl-tail-color:      rgba(180, 208, 231, 0.55);  /* dashes (translucent line) */
-  --tl-mark-color:      rgba(180, 208, 231, 0.5);   /* the trailing question mark*/
+  /* x-offset of the rail's right end from the screen's right edge. The stops are
+     spread with space-between, so the last one starts (inset + content-width)
+     from that edge — the rail stops there, tucked a little under the pill so it
+     never shows a terminus. Pills paint above the rail (z-index 1 vs 0). */
+  --tl-track-end-right: calc(var(--tl-side-inset) + var(--tl-content-width) - var(--tl-track-end-nudge));
 
   /* ── Track colors ─────────────────────────────── */
-  --tl-line-color:      #B4D0E7;
+  --tl-line-color:      #ffffff;
   --tl-accent-color:    #ECA817;
   --tl-accent-width:    15%;   /* stops well short of the next pill — "partway", not "almost there" */
   --tl-accent-height:   4px;
 
   /* ── Pill colors ──────────────────────────────── */
-  --tl-pill-now-bg:     #ECA817;
+  --tl-pill-now-bg:     var(--accent-warm);
   --tl-pill-now-fg:     #ffffff;
   --tl-pill-rest-bg:    #B4D0E7;
   --tl-pill-rest-fg:    #224163;
@@ -653,17 +1075,14 @@ body.lang-switching {
   position: absolute;
   top: var(--tl-track-top);
   left: var(--tl-side-inset);
-  /* End the rail at the last (future) pill instead of the screen edge.
-     Pills are left-aligned at 0 / 1/3 / 2/3 of the rail, so the future pill
-     starts at (100vw + inset)/3 from the right; the nudge tucks the line a
-     little further under that pill. (See --tl-track-end-right.) */
+  /* Starts on the section's left content edge, ends under the last pill. */
   right: var(--tl-track-end-right);
   height: var(--tl-line-thickness);
   z-index: 0;
   pointer-events: none;
 }
 
-/* Base line: full width, draws left → right */
+/* Base line: full width of the track, draws left → right */
 .tl-track-line {
   position: absolute;
   inset: 0;
@@ -691,109 +1110,6 @@ body.lang-switching {
 .timeline-v2.is-visible .tl-track-line   { transform: scaleX(1); }
 .timeline-v2.is-visible .tl-track-accent { transform: scaleX(1); }
 
-/* ── CONTINUATION TAIL ───────────────────────────────────────────────────
- * A dashed, fading rail that trails off the last pill into a translucent
- * question mark — signals the roadmap doesn't stop here. Decorative only.
- * Starts exactly where the solid rail ends, so it reads as one line.
- * ----------------------------------------------------------------------- */
-.tl-track-tail {
-  position: absolute;
-  top: var(--tl-track-top);
-  left: calc(100% - var(--tl-track-end-right));
-  width: var(--tl-tail-length);
-  height: var(--tl-line-thickness);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  /* No z-index here so it doesn't trap its children in a stacking context:
-     the dashed line sits below the pills, the mark sits above them (see each). */
-  pointer-events: none;
-  /* Fades in last, after the future pill has popped */
-  opacity: 0;
-  transition: opacity 0.8s ease;
-}
-
-.timeline-v2.is-visible .tl-track-tail {
-  opacity: 1;
-  transition-delay: 1.7s;
-}
-
-/* Dashed segment that itself fades out toward the right.
-   Positioned with z-index 0 so it sits *below* the pills (stops row is z-index 1)
-   and no longer overlaps the last pill. */
-.tl-tail-line {
-  flex: 1;
-  position: relative;
-  z-index: 0;
-  height: 100%;
-  background: repeating-linear-gradient(
-              to right,
-              var(--tl-tail-color) 0 6px,
-              transparent 6px 13px);
-  -webkit-mask-image: linear-gradient(to right, #000 0%, transparent 95%);
-          mask-image: linear-gradient(to right, #000 0%, transparent 95%);
-}
-
-/* Trailing question mark — the terminus. Hover bobs it and reveals "coming soon". */
-.tl-tail-mark {
-  flex: none;
-  position: relative;
-  z-index: 3;                    /* above the stops row so the whole ? is hoverable */
-  transform: translateY(-2px);   /* optical centering on the rail */
-  pointer-events: auto;          /* re-enable hover (tail itself is none) */
-  cursor: default;
-}
-
-/* Enlarged invisible hit area so hover triggers when you're near the mark,
-   not only directly on the glyph. Doesn't affect layout. */
-.tl-tail-mark::before {
-  content: "";
-  position: absolute;
-  inset: -34px;
-}
-
-.tl-tail-glyph {
-  display: inline-block;
-  transform-origin: center;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 700;
-  font-size: 78px;
-  line-height: 1;
-  color: var(--tl-mark-color);
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1),
-              color     0.2s ease;
-}
-
-/* Grows to 1.5× and holds while hovered */
-.tl-tail-mark:hover .tl-tail-glyph {
-  transform: scale(1.5);
-  color: var(--tl-line-color);
-}
-
-/* Subtle label that fades in under the mark on hover, and scales up with it */
-.tl-tail-soon {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, -8px) scale(1);
-  transform-origin: top center;
-  font-family: 'Gabarito', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-  color: var(--tl-mark-color);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease,
-              transform 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.tl-tail-mark:hover .tl-tail-soon {
-  opacity: 0.85;
-  transform: translate(-50%, 24px) scale(1.35);
-}
-
 /* ── STOPS ROW ──────────────────────────────────────────────────────────
  * Three equal columns spread across the full width. Padding matches the
  * track inset so the pills land on the rail ends.
@@ -804,10 +1120,16 @@ body.lang-switching {
   position: relative;
   z-index: 1;
   padding: 0 var(--tl-side-inset);
+  /* Push the outer stops onto the content edges. With flex:1 thirds, each stop
+     left-aligned inside its own third, which parked the last pill at 2/3 of the
+     width and left the final third empty. */
+  justify-content: space-between;
 }
 
 .tl-stop {
-  flex: 1;
+  /* Sized by its copy, not by an equal share, so space-between can spread them.
+     Still allowed to shrink on narrow windows. */
+  flex: 0 1 var(--tl-content-width);
   min-width: 0;   /* let stops shrink below the fixed --tl-content-width so the
                      items' max-width:100% can cap them on narrow windows */
   display: flex;
@@ -834,7 +1156,7 @@ body.lang-switching {
   height: var(--tl-pill-height);
   padding: 0 22px;
   border-radius: calc(var(--tl-pill-height) / 2);
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 17px;
   white-space: nowrap;
@@ -938,11 +1260,11 @@ body.lang-switching {
 .timeline-v2.is-visible .stop-future   .tl-content { opacity: 1; transform: translateY(0); transition-delay: 1.46s; }
 
 .tl-content > p {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 19px;
   color: var(--tl-text-color);
-  line-height: 1.45;
+  line-height: 1.5;
   text-wrap: pretty;
 }
 
@@ -953,25 +1275,25 @@ body.lang-switching {
 }
 
 .tl-item-title {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 20px;
   color: var(--tl-text-color);
 }
 
 .tl-item-desc {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 18px;
   color: var(--tl-text-color);
-  line-height: 1.45;
+  line-height: 1.5;
   text-wrap: pretty;
 }
 
 
 /* ── FOOTER ────────────────────────────────────────────── */
 .site-footer {
-  background: #0c1f33;
+  background: var(--navy);   /* same plate as the hero — the page opens and closes on it */
   /* Single knob for the brand/contact outward shift. Brand + copyright move
      left by this; contact moves right by it; the divider stretches by it on
      both sides so it still spans every element. Fades to 0 as the window
@@ -1023,7 +1345,7 @@ body.lang-switching {
 }
 
 .footer-name {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 20px;
   color: #f5f5f5;
@@ -1031,7 +1353,7 @@ body.lang-switching {
 
 /* Brand column */
 .footer-tagline {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 15px;
   line-height: 1.5;
@@ -1046,7 +1368,7 @@ body.lang-switching {
   padding: 6px 13px;
   border: 1px solid #1a3a56;
   border-radius: 999px;
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 500;
   font-size: 12.5px;
   color: #8aa9c4;
@@ -1062,7 +1384,7 @@ body.lang-switching {
 }
 
 .footer-link {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 15px;
   color: #b4d0e7;
@@ -1100,7 +1422,7 @@ body.lang-switching {
 }
 
 .footer-contact-text {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 15px;
   color: #8aa9c4;
@@ -1108,7 +1430,7 @@ body.lang-switching {
 
 /* Contact column links — descriptive, underlined (as the GitHub link was originally) */
 .footer-contact-link {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 15px;
   color: #5a96c4;
@@ -1136,7 +1458,7 @@ body.lang-switching {
 }
 
 .footer-copy {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 13px;
   color: #435c72;
@@ -1145,14 +1467,14 @@ body.lang-switching {
 }
 
 .footer-dev {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 13px;
   color: #435c72;
 }
 
 .footer-dev-link {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 13px;
   color: #5a96c4;
@@ -1303,14 +1625,14 @@ body.lang-switching {
 }
 
 .dev-card-name {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 18px;
   color: #f5f5f5;
 }
 
 .dev-card-role {
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 18px;
   color: #f5f5f5;
@@ -1319,7 +1641,7 @@ body.lang-switching {
 .dev-card-link {
   width: fit-content;
   margin-top: 2px;
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 18px;
   color: #5a96c4;
@@ -1362,7 +1684,7 @@ body.lang-switching {
   justify-content: center;
   text-align: center;
   padding: 0 6px;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 19px;
   line-height: 1.2;
@@ -1430,13 +1752,21 @@ body.lang-switching {
 }
 
 .hero-subtitle {
-  font-family: 'Gabarito', sans-serif;
+  /* Body copy, so it speaks in the app's voice, not the document's. Light type
+     on navy reads a shade lighter than it measures — hence the looser leading. */
+  font-family: var(--font-sans);
   font-weight: 400;
-  font-size: clamp(17px, 0.45vw + 13.5px, 20px);
-  color: #f5f5f5;
-  line-height: 1.4;
-  max-width: 590px;
+  font-size: clamp(18px, 0.5vw + 14.5px, 23px);
+  color: #b4d0e7;   /* one step back from the headline's white — it's support copy */
+  line-height: 1.5;
+  max-width: 46ch;
   text-wrap: pretty;
+}
+
+/* The two sentences read as two separate statements, not one paragraph, so the
+   gap between them is larger than the gap inside either of them. */
+.hero-sub2 {
+  margin-top: 32px;
 }
 
 .cta-btn {
@@ -1445,7 +1775,7 @@ body.lang-switching {
   display: inline-block;
   background: #0072d2;
   color: #f5f5f5;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 18px;
   text-decoration: none;
@@ -1475,8 +1805,8 @@ body.lang-switching {
   /* Clip the phone-glow ::before, which extends past the viewport on narrow
      windows (iOS Safari doesn't always honor body overflow-x:hidden). */
   overflow: hidden;
-  background: radial-gradient(ellipse 900px 700px at 75% 45%, #0a3a5c 0%, #042137 65%);
-  background-color: #042137;
+  /* Background stays the flat var(--navy) set in the HERO block — no gradient
+     washes here on purpose; the phone glow is the only light source. */
 }
 
 .problem-section {
@@ -1500,24 +1830,6 @@ body.lang-switching {
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-12px); }
-}
-
-.hero-mockup-col {
-  position: relative;
-}
-
-.hero-mockup-col::before {
-  content: '';
-  position: absolute;
-  width: 380px;
-  height: 380px;
-  background: radial-gradient(ellipse, rgba(0, 114, 210, 0.38) 0%, transparent 68%);
-  filter: blur(36px);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 0;
-  pointer-events: none;
 }
 
 .hero-phone-mockup {
@@ -1586,23 +1898,33 @@ body.lang-switching {
 
 /* Hero elements stay hidden under the skeleton, then animate in once the load
    gate clears (body.is-loaded). */
-.hero-text > * { opacity: 0; }
-.hero-mockup-col { opacity: 0; }
+.hero-text > *,
+.hero-desc > * { opacity: 0; }
+.hero-stage { opacity: 0; }
 
-body.is-loaded .hero-text > * { animation: fadeUp 0.7s ease forwards; }
-/* Child 2 is the mobile-only orbit (display:none on desktop), so the visible
-   desktop sequence stays h1 → sub1 → sub2 → cta at the original timings. */
+body.is-loaded .hero-text > *,
+body.is-loaded .hero-desc > * { animation: fadeUp 0.7s ease forwards; }
+
+/* West column: child 2 is the mobile-only orbit (display:none on desktop), so
+   the visible desktop sequence is headline → CTA. */
 body.is-loaded .hero-text > *:nth-child(1) { animation-delay: 0.05s; }
 body.is-loaded .hero-text > *:nth-child(2) { animation-delay: 0.15s; }
-body.is-loaded .hero-text > *:nth-child(3) { animation-delay: 0.2s; }
-body.is-loaded .hero-text > *:nth-child(4) { animation-delay: 0.3s; }
-body.is-loaded .hero-text > *:nth-child(5) { animation-delay: 0.4s; }
+body.is-loaded .hero-text > *:nth-child(3) { animation-delay: 0.4s; }
 
-body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
+/* East column lands between the headline and the CTA. */
+body.is-loaded .hero-desc > *:nth-child(1) { animation-delay: 0.2s; }
+body.is-loaded .hero-desc > *:nth-child(2) { animation-delay: 0.3s; }
+
+body.is-loaded .hero-stage { animation: fadeUp 0.8s ease 0.25s forwards; }
 
 /* ── DIGITAL UNDERLINE ─────────────────────────────────── */
 .headline-gradient-wrap {
   align-self: flex-start;
+  /* inline-block, so the absolutely positioned fluid canvas has an unambiguous
+     containing block. As a bare inline it would resolve against the inline box's
+     fragments. Still wraps onto its own line — "Ce este" + "eCarnet?" together
+     exceed the column. */
+  display: inline-block;
   position: relative;
 }
 
@@ -1611,53 +1933,26 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
   z-index: 1;
 }
 
+/* ── LIQUID ACCENT WORD ────────────────────────────────────
+ * js/hero-fluid.js paints "eCarnet?" into this canvas and ripples its fill.
+ * It only ever runs on a pointer device with WebGL and no reduced-motion
+ * preference; otherwise .is-fluid is never set and the CSS gradient above
+ * stays exactly as it was. */
+.fluid-word {
+  position: absolute;
+  pointer-events: none;   /* never swallow a click meant for the hero */
+  z-index: 2;
+}
+
+/* The span keeps its box (it's what the canvas is sized and placed against) and
+   keeps its text for i18n + screen readers — it simply stops painting. */
+.headline-gradient-wrap.is-fluid .headline-gradient {
+  opacity: 0;
+}
+
 /* ── SCROLL INDICATOR ──────────────────────────────────── */
 @keyframes fade-in {
   to { opacity: 1; }
-}
-
-@keyframes scroll-wheel {
-  0%   { transform: translateY(0);    opacity: 1; }
-  65%  { transform: translateY(14px); opacity: 0; }
-  66%  { transform: translateY(0);    opacity: 0; }
-  100% { transform: translateY(0);    opacity: 1; }
-}
-
-.scroll-indicator {
-  position: absolute;
-  bottom: 36px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  opacity: 0;
-  animation: fade-in 0.6s ease 1.5s forwards;
-  transition: opacity 0.4s ease;
-}
-
-.scroll-indicator.hidden {
-  opacity: 0 !important;
-  pointer-events: none;
-}
-
-.scroll-mouse {
-  width: 24px;
-  height: 40px;
-  border: 2px solid rgba(90, 150, 196, 0.4);
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 6px;
-}
-
-.scroll-wheel {
-  width: 3px;
-  height: 7px;
-  background: rgba(90, 150, 196, 0.7);
-  border-radius: 2px;
-  animation: scroll-wheel 2s ease-in-out 2.1s infinite;
 }
 
 /* Scroll-triggered elements */
@@ -1705,7 +2000,7 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
   border: none;
   border-radius: 50%;
   overflow: hidden;
-  background: #042137;
+  background: var(--navy);
   cursor: grab;
   touch-action: none;
   box-shadow: 0 8px 26px rgba(0, 114, 210, 0.5),
@@ -1757,7 +2052,7 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
 
 .capture-heading {
   margin-bottom: 12px;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 500;
   font-size: 15px;
   line-height: 1.3;
@@ -1778,7 +2073,7 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
   background: #1b2c3f;
   border: 0.6px solid #273f57;
   border-radius: 11px;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   color: #f5f5f5;
   outline: none;
@@ -1806,7 +2101,7 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
   background: #0072d2;
   border: none;
   border-radius: 12px;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 16px;
   color: #f5f5f5;
@@ -1819,7 +2114,7 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
 
 .capture-error {
   margin-top: 8px;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 500;
   font-size: 13.5px;
   line-height: 1.35;
@@ -1829,7 +2124,7 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
 }
 
 .capture-thanks {
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 500;
   font-size: 15px;
   line-height: 1.4;
@@ -1847,7 +2142,7 @@ body.is-loaded .hero-mockup-col { animation: fadeUp 0.8s ease 0.25s forwards; }
   z-index: 5;
   display: flex;
   align-items: center;
-  background: #042137;
+  background: var(--navy);
   transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
@@ -1858,21 +2153,27 @@ body.is-loaded .hero-skeleton {
 }
 
 .hero-skeleton-inner {
+  position: relative;
   width: 100%;
-  max-width: 1312px;
+  max-width: none;   /* full-bleed, like .hero-inner */
   margin: 0 auto;
-  padding: 72px var(--side-pad) 0;
+  padding: 0 var(--side-pad);   /* mirrors .hero-inner — both centre on the section */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: clamp(32px, 5vw, 72px);
 }
 
-.sk-text {
-  flex: 1;
+/* Same column arithmetic as .hero-text / .hero-desc — including the phone's
+   eastward shift, or the skeleton would jump sideways as it hands off. */
+.sk-west,
+.sk-east {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+}
+
+.sk-west { width: calc(50% - (var(--phone-w) / 2) - var(--hero-gap) + var(--phone-shift)); }
+.sk-east {
+  width: calc(50% - (var(--phone-w) / 2) - var(--hero-gap-east) - var(--phone-shift));
+  margin-left: auto;
 }
 
 .sk-line,
@@ -1884,22 +2185,32 @@ body.is-loaded .hero-skeleton {
   border-radius: 12px;
 }
 
-.sk-line-xl { height: 70px; width: 88%; border-radius: 16px; }
-.sk-line-xl + .sk-line-xl { width: 66%; }
-.sk-sub { height: 18px; width: 60%; border-radius: 8px; }
-.sk-sub-short { width: 44%; }
-.sk-btn { height: 46px; width: 168px; border-radius: 18px; margin-top: 14px; }
+/* Two headline bars, and they are NOT the same size any more: "Ce este" is
+   0.56× the accent word. Heights are the real line boxes (0.94 leading), widths
+   are the real ink — the accent word overruns its column, so it fills the bar. */
+.sk-line-xl { height: 56px; width: 52%; border-radius: 14px; }
+.sk-line-xl-b { height: 100px; width: 100%; border-radius: 18px; margin-top: 4px; }
 
-/* Extra skeleton bars used only on mobile (the mobile hero headline/description
-   run to more lines). Hidden on desktop so its skeleton stays a 2+2-line block. */
-.sk-mobile-extra { display: none; }
+/* The CTA sits 80px under the headline (its 48px margin + the headline's 32px). */
+.sk-btn { height: 46px; width: 200px; border-radius: 18px; margin-top: 80px; }
 
+/* Description: two paragraphs of two lines, with the wider gap between them. */
+.sk-sub { height: 20px; width: 100%; border-radius: 8px; margin-top: 10px; }
+.sk-sub:first-child { margin-top: 0; }
+.sk-sub-short { width: 62%; }
+.sk-sub-gap { margin-top: 42px; }   /* hero-sub2's 32px margin + the 10px line pitch */
+
+/* The phone placeholder — matches the 3D framing exactly, including the eastward
+   shift. Without --phone-shift here the skeleton's phone sits on the section's
+   centre line and visibly jumps east when the real stage takes over. */
 .sk-phone {
-  flex-shrink: 0;
-  width: clamp(190px, 14.6vw + 70px, 280px);
-  height: 560px;
-  max-height: 68vh;
-  border-radius: 40px;
+  position: absolute;
+  left: calc(50% + var(--phone-shift));
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--phone-w);
+  height: calc(var(--phone-fill) * 100vh);
+  border-radius: 44px;
 }
 
 /* Shimmer sweep across each placeholder */
@@ -1922,22 +2233,17 @@ body.is-loaded .hero-skeleton {
 .navbar { opacity: 0; }
 body.fonts-ready .navbar { opacity: 1; transition: opacity 0.4s ease; }
 
-/* Russian hero headline runs longer than EN — shrink it so it fits the hero
-   without overlapping the subtitle. */
-html[lang="ru"] .headline-white,
-html[lang="ru"] .headline-gradient {
-  font-size: clamp(50px, 4.45vw + 17.6px, 80px);
-}
-
-/* Romanian headline also runs long — shrink it a touch. */
-html[lang="ro"] .headline-white,
-html[lang="ro"] .headline-gradient {
-  font-size: clamp(54px, 4.8vw + 19px, 86px);
-}
-
 /* ── FAQ ───────────────────────────────────────────────── */
 .faq-section {
-  background: #faf9f6;
+  background-color: #faf9f6;
+  /* Isometric-cube wallpaper (rhombille tiling), drawn as an inline SVG in
+     three near-bg greys so it reads as texture, not decoration. A soft
+     bg-colored pool sits over the middle so the Q&A column stays calm and
+     the cubes emerge toward the edges. */
+  background-image:
+    radial-gradient(ellipse 76% 68% at 50% 41%, rgba(250, 249, 246, 0.95) 26%, rgba(250, 249, 246, 0) 92%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='90' viewBox='0 0 52 90'%3E%3Cg%3E%3Cg transform='translate(0,0)'%3E%3Cpath d='M0 -30L26 -15L0 0L-26 -15Z' fill='%23f3f2ef'/%3E%3Cpath d='M0 0L26 -15L26 15L0 30Z' fill='%23e9e8e5'/%3E%3Cpath d='M0 0L-26 -15L-26 15L0 30Z' fill='%23e5e4de'/%3E%3C/g%3E%3Cg transform='translate(52,0)'%3E%3Cpath d='M0 -30L26 -15L0 0L-26 -15Z' fill='%23f3f2ef'/%3E%3Cpath d='M0 0L26 -15L26 15L0 30Z' fill='%23e9e8e5'/%3E%3Cpath d='M0 0L-26 -15L-26 15L0 30Z' fill='%23e5e4de'/%3E%3C/g%3E%3Cg transform='translate(26,45)'%3E%3Cpath d='M0 -30L26 -15L0 0L-26 -15Z' fill='%23f3f2ef'/%3E%3Cpath d='M0 0L26 -15L26 15L0 30Z' fill='%23e9e8e5'/%3E%3Cpath d='M0 0L-26 -15L-26 15L0 30Z' fill='%23e5e4de'/%3E%3C/g%3E%3Cg transform='translate(0,90)'%3E%3Cpath d='M0 -30L26 -15L0 0L-26 -15Z' fill='%23f3f2ef'/%3E%3Cpath d='M0 0L26 -15L26 15L0 30Z' fill='%23e9e8e5'/%3E%3Cpath d='M0 0L-26 -15L-26 15L0 30Z' fill='%23e5e4de'/%3E%3C/g%3E%3Cg transform='translate(52,90)'%3E%3Cpath d='M0 -30L26 -15L0 0L-26 -15Z' fill='%23f3f2ef'/%3E%3Cpath d='M0 0L26 -15L26 15L0 30Z' fill='%23e9e8e5'/%3E%3Cpath d='M0 0L-26 -15L-26 15L0 30Z' fill='%23e5e4de'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-size: auto, 78px 135px;   /* 1.5× the 52×90 tile — bigger cubes, exact ratio, no seams */
   padding-top: 60px;
 }
 
@@ -1950,15 +2256,33 @@ html[lang="ro"] .headline-gradient {
 }
 
 .faq-heading {
-  font-family: 'Fira Sans Condensed', sans-serif;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: clamp(30px, 3.45vw + 3.4px, 52px);
   color: #0e2f44;
-  line-height: 0.97;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
   margin-bottom: 40px;
   text-align: center;
   text-wrap: balance;
+  position: relative;
 }
+
+/* Gradient underline draws out from the center once the heading has entered. */
+.faq-heading::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 64px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #0072D2, #00BEFF);
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 0.6s cubic-bezier(0.2, 0, 0, 1) 0.3s;
+}
+
+.faq-heading.visible::after { transform: translateX(-50%) scaleX(1); }
 
 .faq-list {
   display: flex;
@@ -1971,10 +2295,23 @@ html[lang="ro"] .headline-gradient {
   border: 0.4px solid #ebebeb;
   border-radius: 20px;
   overflow: hidden;
-  transition: box-shadow 0.24s ease;
+  transition: box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+/* Entrance: rows rise a bit further and settle from a slight shrink, so the
+   stagger (delays set in main.js) reads as a cascade rather than a blink. */
+.faq-item.animate-in { transform: translateY(28px) scale(0.97); }
+.faq-item.animate-in.visible { transform: none; }
+
+/* Closed items lift slightly under the cursor so the row feels responsive
+   before you even click. */
+.faq-item:not(.open):hover {
+  border-color: #dfe5ea;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 }
 
 .faq-item.open {
+  border-color: #d8e4ee;
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.08);
 }
 
@@ -1990,7 +2327,7 @@ html[lang="ro"] .headline-gradient {
   border: none;
   cursor: pointer;
   text-align: left;
-  font-family: 'Gabarito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   font-size: 19px;
   color: #0e2f44;
@@ -1999,6 +2336,13 @@ html[lang="ro"] .headline-gradient {
 }
 
 .faq-q:hover { color: #0072d2; }
+
+/* The question text nudges right under the cursor — the row answers back
+   before you commit to the click. */
+.faq-q > span:first-child {
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+.faq-q:hover > span:first-child { transform: translateX(4px); }
 
 .faq-chevron {
   flex: none;
@@ -2010,7 +2354,22 @@ html[lang="ro"] .headline-gradient {
 }
 
 .faq-q:hover .faq-chevron { color: #0072d2; }
-.faq-item.open .faq-chevron { transform: rotate(180deg); }
+
+/* Opening: the chevron flips with a small overshoot pop. */
+@keyframes faq-chevron-pop {
+  0%   { transform: rotate(180deg) scale(1); }
+  45%  { transform: rotate(180deg) scale(1.28); }
+  100% { transform: rotate(180deg) scale(1); }
+}
+
+.faq-item.open .faq-chevron {
+  transform: rotate(180deg);
+  animation: faq-chevron-pop 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item.open .faq-chevron { animation: none; }
+}
 
 /* Expand/collapse via grid-template-rows 0fr→1fr — animates smoothly to the
    content's natural height without JS measuring (unlike max-height). */
@@ -2029,12 +2388,25 @@ html[lang="ro"] .headline-gradient {
 
 .faq-a p {
   padding: 0 24px 22px;
-  font-family: 'Gantari', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 400;
   font-size: 17px;
   color: #40525f;
   line-height: 1.55;
   text-wrap: pretty;
+  /* The answer text rides the height expansion: it fades in and settles down
+     into place just after the row starts opening, and slips back up as it
+     closes — the panel reads as revealing content, not just resizing. */
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity   0.24s ease,
+              transform 0.3s  cubic-bezier(0.2, 0, 0, 1);
+}
+
+.faq-item.open .faq-a p {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.08s;
 }
 
 @media (max-width: 768px) {
@@ -2106,23 +2478,31 @@ html[lang="ro"] .headline-gradient {
     background: #f5f5f5;
   }
 
-  /* Brand collapse hand-off. On desktop the wordmark and the capped-e mark
-     cross-dissolve in place, which reads as a morph. On mobile that same overlap
-     reads as "an E with a bit of leftover text on it", so sequence it instead:
-     fade the wordmark out fast, THEN bring the mark in just after, so the two
-     never share the frame. */
+  /* Brand morph hand-off. On desktop the mark and the wordmark cross-dissolve
+     in place, which reads as a morph. On mobile that same overlap reads as
+     "an E with a bit of leftover text on it", so sequence it instead: fade the
+     mark out fast, THEN unroll the wordmark just after, so the two never share
+     the frame. */
+  .navbar.scrolled .brand-mark { transition-duration: 0.18s; }
+  /* Wordmark comes in fast, starting just as the mark finishes vanishing — a
+     ~50ms overlap keeps it feeling like one smooth swap, not a two-step reveal. */
+  .navbar.scrolled .brand-e {
+    transition-delay: 0.08s;
+    transition-duration: 0.13s;
+  }
+  .navbar.scrolled .brand-rest {
+    transition: max-width 0.26s cubic-bezier(0.2, 0, 0, 1) 0.08s,
+                opacity   0.13s ease 0.08s,
+                transform 0.26s cubic-bezier(0.2, 0, 0, 1) 0.08s;
+  }
+  /* Scrolling back up: retract the wordmark fast, then the mark returns. */
   .brand-e { transition-duration: 0.13s; }
   .brand-rest {
     transition: max-width 0.26s cubic-bezier(0.2, 0, 0, 1),
                 opacity   0.13s ease,
                 transform 0.26s cubic-bezier(0.2, 0, 0, 1);
   }
-  /* Mark fades in fast, starting just as the wordmark finishes vanishing — a
-     ~50ms overlap keeps it feeling like one smooth swap, not a two-step reveal. */
-  .navbar.scrolled .brand-mark {
-    transition-delay: 0.08s;
-    transition-duration: 0.18s;
-  }
+  .brand-mark { transition-delay: 0.08s; transition-duration: 0.18s; }
 
   /* ── Drawer ── */
   /* The navbar (transform + backdrop-filter) is the drawer's containing block,
@@ -2185,7 +2565,7 @@ html[lang="ro"] .headline-gradient {
     gap: 34px;
   }
 
-  /* Gabarito ExtraBold; the active section is white, the rest light blue.
+  /* Geist ExtraBold; the active section is white, the rest light blue.
      Padding keeps tap targets comfortable without changing look. */
   .nav-link {
     font-size: 24px;
@@ -2277,7 +2657,13 @@ html[lang="ro"] .headline-gradient {
   }
 
   /* ── Hero: stacked, glowing orbit instead of phone (Figma 115:5) ── */
-  .hero { min-height: 100svh; }
+  /* There is no phone to centre against here, so the stack stays top-anchored —
+     re-pinning what the desktop rule now centres. */
+  .hero {
+    min-height: 100svh;
+    align-items: flex-start;
+    padding: 60px 0 0;
+  }
 
   .hero-inner {
     flex-direction: column;
@@ -2286,19 +2672,13 @@ html[lang="ro"] .headline-gradient {
     padding: 16px 24px 56px;   /* sit higher so the CTA is comfortably above the fold */
   }
 
-  .hero-text { margin-top: 0; }
   .hero-headline { margin-bottom: 4px; }
 
   /* Bigger, punchier headline per the Figma (≈45px on a phone). Stays
      left-aligned — the centered glowing icon below balances the composition.
-     Each clamp's max still equals the desktop clamp's min, so crossing 768px
-     doesn't jump. */
-  .headline-white,
-  .headline-gradient { font-size: clamp(40px, 8vw + 12px, 64px); }
-  html[lang="ro"] .headline-white,
-  html[lang="ro"] .headline-gradient { font-size: clamp(38px, 7.2vw + 15px, 54px); }
-  html[lang="ru"] .headline-white,
-  html[lang="ru"] .headline-gradient { font-size: clamp(34px, 6vw + 13px, 50px); }
+     The clamp's max still equals the desktop clamp's min, so crossing 768px
+     doesn't jump. (The script accent keeps riding at 1.18× of this.) */
+  .hero-headline { --headline-size: clamp(40px, 8vw + 12px, 64px); }
 
   .hero-orbit-mobile {
     display: flex;
@@ -2391,8 +2771,8 @@ html[lang="ro"] .headline-gradient {
     text-align: center;
   }
 
-  /* Drop the closing sentence on mobile — it doesn't lead into the "Why?" CTA
-     as cleanly as it does on desktop, where it fills the column. */
+  /* Drop the closing sentence on mobile — one sentence reads cleaner into the
+     CTA on a phone (Mihai's call, 2026-07-10). */
   .hero-sub2 { display: none; }
 
   /* Wider CTA pill per Figma (~68% of the frame width). */
@@ -2406,13 +2786,30 @@ html[lang="ro"] .headline-gradient {
     text-align: center;
   }
 
-  .hero-mockup-col { display: none; }
-  .scroll-indicator { display: none; }
+  /* Mobile keeps the orbit in the hero; the phone lives in the solution section.
+     With no phone to clear, both columns collapse into one stack and the
+     headline goes back to sizing off the viewport, not the column.
+     .hero-text becomes display:contents so its children join .hero-inner's flex
+     flow directly — that's what lets the east description slot between the
+     headline and the CTA instead of after them. */
+  .hero-inner { flex-direction: column; align-items: center; }
+  .hero-stage { display: none; }
+
+  .hero-text {
+    display: contents;
+    container-type: normal;
+  }
+  .hero-text > .hero-headline { order: 1; }
+  .hero-text > .hero-orbit-mobile { order: 2; }
+  .hero-desc { order: 3; width: 100%; margin-left: 0; margin-right: 0; padding-left: 0; }
+  .hero-text > .cta-btn { order: 4; }
+
+  .hero-headline { --headline-size: clamp(40px, 8vw + 12px, 64px); }
 
   /* Skeleton mirrors the real mobile hero ORDER: big left-aligned headline bars,
      then a centered circle for the glowing orbit, then centered description bars,
-     then a wide centered button. display:contents flattens .sk-text so the circle
-     (a sibling in the markup) can sit BETWEEN the headline and the description. */
+     then a wide centered button. display:contents flattens .sk-west/.sk-east so
+     the circle (their sibling) can sit BETWEEN the headline and the description. */
   /* Top-align the skeleton (it was vertically centered, which dropped everything
      lower than the real, top-aligned hero content). */
   .hero-skeleton { align-items: flex-start; }
@@ -2426,27 +2823,31 @@ html[lang="ro"] .headline-gradient {
     padding: 76px 24px 0;
   }
 
-  .sk-text { display: contents; }
-  .sk-mobile-extra { display: block; }
+  /* Flatten both columns so the phone/orbit placeholder (their sibling) can sit
+     BETWEEN the headline and the description, matching the real mobile order. */
+  .sk-west, .sk-east {
+    display: contents;
+  }
+  .sk-mobile-hide { display: none; }   /* sub2 is dropped on mobile */
 
-  /* Headline: three big, broad, left-aligned bars — matches the ~3-line headline
-     (last one shorter, standing in for the "acum digital!" accent line). */
+  /* Headline: two bars — "Ce este" over "eCarnet?". */
   .sk-line-xl {
     order: 1;
     align-self: flex-start;
-    height: 40px;
-    width: 94%;
+    height: 44px;
+    width: 68%;
     border-radius: 12px;
-    margin-bottom: 12px;
+    margin-top: 0;
+    margin-bottom: 8px;
   }
-  .sk-line-xl + .sk-line-xl { width: 80%; }   /* 2nd & 3rd headline bars */
-  .sk-line-xl.sk-accent     { width: 52%; }   /* accent line — shortest */
+  .sk-line-xl-b { width: 80%; }
 
   /* Icon placeholder: a rounded square (not a disc) that mirrors the real app
      icon — same ~120px size, 30px corner radius and slight 12° tilt. Margins
      reserve roughly the orbit's full vertical footprint. */
   .sk-phone {
     order: 2;
+    position: static;   /* undo the desktop absolute centring */
     width: 124px;
     height: 124px;
     max-height: none;
@@ -2455,18 +2856,15 @@ html[lang="ro"] .headline-gradient {
     margin: 58px auto 54px;
   }
 
-  /* Description: four centered bars matching the ~4-line description (last short). */
+  /* Description: two centered bars matching the single mobile sentence. */
   .sk-sub {
     order: 3;
     align-self: center;
     height: 15px;
     width: 88%;
+    margin-top: 0;
     margin-bottom: 9px;
   }
-  /* Only one sentence on mobile now (sub2 is hidden) — drop the two extra bars
-     so the skeleton height matches the real, shorter description. */
-  .sk-sub-b,
-  .sk-sub-c     { display: none; }
   .sk-sub-short { width: 58%; margin-bottom: 0; }
 
   /* CTA: a wide centered pill matching the real button. */
@@ -2485,7 +2883,8 @@ html[lang="ro"] .headline-gradient {
   .problem-section { min-height: auto; }
 
   .problem-inner { padding: 28px 24px 72px; }
-  .problem-heading { font-size: 32px; margin-bottom: 44px; }
+  .problem-heading { font-size: 32px; margin-bottom: 10px; }
+  .problem-subtitle { font-size: 17.5px; margin-bottom: 38px; }
 
   .problem-grid {
     grid-template-columns: 1fr;
@@ -2520,18 +2919,24 @@ html[lang="ro"] .headline-gradient {
 
   /* The "This is what you get" part is appended to the heading on desktop only;
      on mobile it becomes its own heading after the phone (see below). */
-  .solution-heading-extra { display: none; }
+  /* On mobile this string reappears after the phone as .solution-features-heading,
+     so the desktop subtitle is suppressed here to avoid showing it twice. */
+  .solution-subtitle { display: none; }
 
   /* Mobile-only intro heading for the feature cards, sits after the phone.
-     Left-aligned so it lines up with the feature cards below it. */
+     Centered, matching the main solution heading above it. */
   .solution-features-heading {
     display: block;
-    font-family: 'Fira Sans Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 27px;
+    /* Unlike the desktop .solution-subtitle, this genuinely heads the card list
+       (the phone mockup separates it from .solution-heading), so it keeps the
+       display serif and takes a colon rather than a period. */
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
     color: #0e2f44;
-    line-height: 1;
-    text-align: left;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    text-align: center;
     text-wrap: balance;
     margin: 2px 0 -4px;
   }
@@ -2542,7 +2947,8 @@ html[lang="ro"] .headline-gradient {
     gap: 30px;
   }
 
-  .mockup-col { align-self: center; }
+  .mockup-col { align-self: center; flex-basis: auto; }
+  .mockup-col::before { display: none; }  /* court is desktop-only (orbit hidden here) */
   .solution-orbit { display: none; }
 
   .solution-phone-mobile {
@@ -2567,9 +2973,14 @@ html[lang="ro"] .headline-gradient {
   .timeline-v2 {
     /* rail x-position, measured from the stops' left edge to the rail center */
     --tl-rail-x: 15px;
+    --tl-pill-h: 34px;
+    --tl-rail-top: calc(var(--tl-pill-h) / 2);   /* a pill's vertical center */
+    --tl-stop-gap: 36px;                         /* .tl-stops gap             */
+    --tl-pill-gap: 14px;                         /* .tl-content margin-top    */
+    --tl-tick-x: -31px;         /* rail center, in .tl-item coordinates       */
+    --tl-tick-end: 13px;        /* tick's bottom edge, below the item's top   */
     width: auto;
     margin-left: 0;
-    padding-bottom: 130px;    /* room for the dashed tail + "?" below the stops */
   }
 
   .tl-track { display: none; }
@@ -2578,26 +2989,65 @@ html[lang="ro"] .headline-gradient {
     flex-direction: column;
     align-items: stretch;
     position: relative;
-    gap: 36px;
+    /* The desktop rule spreads the stops along the main axis; on a column that
+       would try to distribute them vertically, and --tl-content-width would be
+       read as a flex-basis HEIGHT. Both are undone here. */
+    justify-content: flex-start;
+    gap: var(--tl-stop-gap);
     padding: 0;
   }
 
-  /* Vertical rail, drawn top → bottom on scroll (mirrors the desktop draw) */
-  .tl-stops::before {
+  /* ── Vertical rail ────────────────────────────────────────────────────
+   * Built from per-stop segments rather than one bar spanning .tl-stops.
+   * The old single bar was pinned to the container's bottom, which sits
+   * below the last item's text — so it always overshot the final tick by
+   * however tall that text happened to be. Each segment instead ends at a
+   * point the layout already defines, so the last one terminates exactly on
+   * the last tick no matter how the copy wraps or which language is on.
+   * -------------------------------------------------------------------- */
+  .tl-stop {
+    position: relative;
+    flex: 0 0 auto;   /* not the desktop's 250px basis — that would be a height here */
+  }
+
+  .tl-stop::before {
     content: "";
     position: absolute;
     left: calc(var(--tl-rail-x) - var(--tl-line-thickness) / 2);
-    top: 17px;                 /* first pill's center */
-    /* End right where the dashed tail begins; the mask fades the last stretch so
-       the solid rail dissolves into the dashes instead of hard-overlapping them. */
-    bottom: -14px;
+    top: var(--tl-rail-top);
+    /* Run past this stop's bottom and into the next pill's center. */
+    bottom: calc(-1 * (var(--tl-stop-gap) + var(--tl-rail-top)));
     width: var(--tl-line-thickness);
     background: var(--tl-line-color);
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
-            mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
+    border-radius: 1px;
     transform: scaleY(0);
     transform-origin: top center;
-    transition: transform 1.5s cubic-bezier(0.25, 0, 0.15, 1);
+  }
+
+  /* Last stop: the segment only bridges its pill to the first item; from
+     there the items carry the rail down (see .tl-item::after). */
+  .tl-stop:last-child::before {
+    bottom: auto;
+    height: calc(var(--tl-pill-h) - var(--tl-rail-top) + var(--tl-pill-gap));
+  }
+
+  .tl-stop:last-child .tl-item::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--tl-tick-x) - var(--tl-line-thickness) / 2);
+    top: -1px;                               /* 1px overlap hides the seam   */
+    bottom: calc(-1 * var(--tl-item-gap));   /* down to the next item's top  */
+    width: var(--tl-line-thickness);
+    background: var(--tl-line-color);
+    border-radius: 1px;
+    transform: scaleY(0);
+    transform-origin: top center;
+  }
+
+  /* The end of the line: flush with the final tick, nothing past it. */
+  .tl-stop:last-child .tl-item:last-child::after {
+    bottom: auto;
+    height: calc(var(--tl-tick-end) + 1px);   /* +1px for the -1px overlap */
   }
 
   /* Yellow "now" accent on the top segment of the rail */
@@ -2605,31 +3055,101 @@ html[lang="ro"] .headline-gradient {
     content: "";
     position: absolute;
     left: calc(var(--tl-rail-x) - var(--tl-accent-height) / 2);
-    top: 17px;
+    top: var(--tl-rail-top);
     height: 90px;    /* partway toward the next stop, not nearly reaching it */
     width: var(--tl-accent-height);
     background: linear-gradient(to bottom, var(--tl-accent-color) 55%, transparent 100%);
     border-radius: 2px;
     transform: scaleY(0);
     transform-origin: top center;
-    transition: transform 0.7s ease;
+    /* Rides down with the stroke's front rather than trailing it: this spans
+       the rail's top ~17%, and the rail crosses that in ~0.2s. */
+    transition: transform 0.2s linear;
     z-index: 1;
   }
 
-  .timeline-v2.is-visible .tl-stops::before { transform: scaleY(1); }
+  /* ── The draw ─────────────────────────────────────────────────────────
+   * One stroke shooting from the first pill straight down to the last tick.
+   * The rail is five boxes, so for it to read as a single line every segment
+   * must move at the same speed — ~500px/s here. Hence: `linear` throughout
+   * (easing would visibly decelerate at each joint), a duration set to each
+   * segment's own length ÷ 500, and a delay equal to the durations before it.
+   * The lengths noted are measured at 390px/RO; they shift a little with
+   * viewport and language, so speed varies by at most ~15% on the last stop.
+   * -------------------------------------------------------------------- */
+  .timeline-v2.is-visible .stop-now::before {
+    transform: scaleY(1);
+    transition: transform 0.26s linear 0s;        /* 130px */
+  }
+  .timeline-v2.is-visible .stop-upcoming::before {
+    transform: scaleY(1);
+    transition: transform 0.53s linear 0.26s;     /* 263px */
+  }
+  .timeline-v2.is-visible .stop-future::before {
+    transform: scaleY(1);
+    transition: transform 0.06s linear 0.79s;     /*  31px — pill → first item */
+  }
+  .timeline-v2.is-visible .stop-future .tl-item::after {
+    transform: scaleY(1);
+    transition: transform 0.18s linear 0.85s;     /*  90px */
+  }
+  .timeline-v2.is-visible .stop-future .tl-item:last-child::after {
+    transition: transform 0.03s linear 1.03s;     /*  14px — lands on the tick */
+  }
+
+  /* Each pill pops as the stroke arrives at it, its text 0.22s behind — the
+     same relationship the desktop draw has, retimed to the quicker rail. */
+  .timeline-v2.is-visible .stop-upcoming .tl-pill { animation-delay: 0.26s; }
+  .timeline-v2.is-visible .stop-future   .tl-pill { animation-delay: 0.79s; }
+
+  /* The rail's lower half hangs off .tl-item, which sits inside .tl-content —
+     so .tl-content must NOT be the thing that fades and slides in, or the
+     line's end stays invisible until the copy lands and then rides it 10px
+     upward. Hold the container still and reveal the text inside it instead. */
+  .tl-content { opacity: 1; transform: none; transition: none; }
+
+  .tl-content > p,
+  .tl-item-title,
+  .tl-item-desc {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+
+  .timeline-v2.is-visible .tl-content > p,
+  .timeline-v2.is-visible .tl-item-title,
+  .timeline-v2.is-visible .tl-item-desc {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Ticks belong to the line, but still arrive with their stop's copy.
+     (Their hidden initial state lives on the .tl-item::before rule below.) */
+  .timeline-v2.is-visible .tl-item::before { opacity: 1; }
+
+  .timeline-v2.is-visible .stop-now .tl-content > p { transition-delay: 0.22s; }
+
+  .timeline-v2.is-visible .stop-upcoming .tl-item-title,
+  .timeline-v2.is-visible .stop-upcoming .tl-item-desc,
+  .timeline-v2.is-visible .stop-upcoming .tl-item::before { transition-delay: 0.48s; }
+
+  .timeline-v2.is-visible .stop-future .tl-item-title,
+  .timeline-v2.is-visible .stop-future .tl-item-desc,
+  .timeline-v2.is-visible .stop-future .tl-item::before { transition-delay: 1.01s; }
+
   .timeline-v2.is-visible .tl-stops::after  {
     transform: scaleY(1);
     animation: accent-breathe 2.6s ease-in-out 1.6s infinite;
   }
 
   .tl-pill {
-    height: 34px;
+    height: var(--tl-pill-h);
     padding: 0 18px;
     font-size: 15px;
   }
 
   .tl-content {
-    margin-top: 14px;
+    margin-top: var(--tl-pill-gap);
     padding-left: 46px;       /* text clears the rail */
   }
 
@@ -2643,61 +3163,18 @@ html[lang="ro"] .headline-gradient {
   .tl-item::before {
     content: "";
     position: absolute;
-    left: -31px;              /* rail center, in item coordinates */
-    top: 11px;
+    left: var(--tl-tick-x);   /* rail center, in item coordinates */
+    top: calc(var(--tl-tick-end) - 2px);
     width: 22px;
     height: 2px;
     background: var(--tl-line-color);
-    opacity: 0.7;
+    /* Revealed with its stop's copy; see .is-visible .tl-item::before above. */
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
 
   .tl-item-title { font-size: 17px; }
   .tl-item-desc  { font-size: 15px; }
-
-  /* Tail: dashed rail continuation + "?" — now vertical, below the stops */
-  .tl-track-tail {
-    left: calc(var(--tl-rail-x) - 15px);  /* 30px-wide column centered on the rail */
-    right: auto;
-    top: auto;
-    bottom: 0;
-    width: 30px;
-    height: 115px;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .tl-tail-line {
-    width: var(--tl-line-thickness);
-    height: auto;
-    background: repeating-linear-gradient(
-                to bottom,
-                var(--tl-tail-color) 0 6px,
-                transparent 6px 13px);
-    /* Fade IN at the top so the first dashes emerge softly right where the solid
-       rail fades OUT (a crossfade, not an overlap), then fade out toward the "?". */
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 16px), transparent);
-            mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 16px), transparent);
-  }
-
-  .tl-tail-mark { transform: none; }
-  .tl-tail-glyph { font-size: 44px; }
-
-  /* The "?" sits on the left rail here, so the desktop label position (dropping
-     straight down, centered) would spill past the bottom/side of the screen.
-     Put the label in line to the RIGHT of the mark instead and grow it rightward
-     from its left edge, so the mark + text scale up together without ever
-     leaving the window. */
-  .tl-tail-soon {
-    top: 50%;
-    left: 100%;
-    transform: translate(10px, -50%) scale(1);
-    transform-origin: left center;
-  }
-  .tl-tail-mark:hover .tl-tail-soon {
-    opacity: 0.85;
-    transform: translate(14px, -50%) scale(1.25);
-  }
 
   /* ── Footer: compact, per Figma ── */
   .site-footer { --footer-shift: 0px; }

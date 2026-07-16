@@ -7,13 +7,31 @@
   <link rel="icon" href="assets/icon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700;800&family=Fira+Sans+Condensed:wght@800;900&family=Fleur+De+Leah&family=Gantari&display=swap">
-  <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400;600;700;800&family=Fira+Sans+Condensed:wght@800;900&family=Fleur+De+Leah&family=Gantari&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <!-- Literata carries the display voice and is the only serif on the page; it ships
+       cyrillic + latin-ext, so RO diacritics and the RU translation render in the real
+       face instead of falling back to Times. Fraunces and Instrument Serif did not. -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fleur+De+Leah&family=Geist:wght@400;500;600;700;800;900&family=Literata:opsz,wght@7..72,400..700&family=Playfair+Display:ital,wght@1,500;1,600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Fleur+De+Leah&family=Geist:wght@400;500;600;700;800;900&family=Literata:opsz,wght@7..72,400..700&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20">
+
+  <!-- three.js for the hero phone, ogl for the liquid accent word. Import map
+       rather than a bundler, so the site stays zero-build. Pinned to exact
+       versions — "latest" would let a breaking release take the hero down. -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
+      "ogl": "https://unpkg.com/ogl@1.0.11/src/index.js"
+    }
+  }
+  </script>
+
   <noscript>
     <style>
       .hero-skeleton { display: none; }
-      .hero-text > *, .hero-mockup-col, .navbar { opacity: 1 !important; animation: none !important; }
+      .hero-text > *, .hero-desc > *, .hero-stage, .navbar { opacity: 1 !important; animation: none !important; }
     </style>
   </noscript>
 </head>
@@ -69,20 +87,28 @@
   <!-- HERO -->
   <section id="acasa" class="hero">
 
-    <!-- Loading skeleton (removed once fonts + the phone image are ready) -->
+    <!-- Loading skeleton (removed once fonts + the phone image are ready).
+         Mirrors the real hero: headline + CTA west, phone centre, description
+         east. Its columns use the same --phone-w / --hero-gap tokens as the
+         real thing, so the two cannot drift apart. -->
     <div class="hero-skeleton" id="hero-skeleton" aria-hidden="true">
       <div class="hero-skeleton-inner">
-        <div class="sk-text">
+
+        <div class="sk-west">
           <div class="sk-line sk-line-xl"></div>
-          <div class="sk-line sk-line-xl"></div>
-          <div class="sk-line sk-line-xl sk-mobile-extra sk-accent"></div>
-          <div class="sk-line sk-sub"></div>
-          <div class="sk-line sk-sub sk-mobile-extra sk-sub-b"></div>
-          <div class="sk-line sk-sub sk-mobile-extra sk-sub-c"></div>
-          <div class="sk-line sk-sub sk-sub-short"></div>
+          <div class="sk-line sk-line-xl sk-line-xl-b"></div>
           <div class="sk-btn"></div>
         </div>
+
         <div class="sk-phone"></div>
+
+        <div class="sk-east">
+          <div class="sk-line sk-sub"></div>
+          <div class="sk-line sk-sub sk-sub-short"></div>
+          <div class="sk-line sk-sub sk-sub-gap sk-mobile-hide"></div>
+          <div class="sk-line sk-sub sk-sub-short sk-mobile-hide"></div>
+        </div>
+
       </div>
     </div>
 
@@ -90,9 +116,9 @@
 
       <div class="hero-text">
         <h1 class="hero-headline">
-          <span class="headline-white" data-i18n="hero.headlineWhite">eCarnet este carnetul tău</span>
+          <span class="headline-white" data-i18n="hero.headlineWhite">Ce este</span>
           <span class="headline-gradient-wrap">
-            <span class="headline-gradient" data-i18n="hero.headlineAccent">acum digital!</span>
+            <span class="headline-gradient" data-i18n="hero.headlineAccent">eCarnet?</span>
           </span>
         </h1>
 
@@ -109,23 +135,28 @@
           </div>
         </div>
 
-        <p class="hero-subtitle">
-          <span data-i18n="hero.sub1">eCarnet înlocuiește actualul carnet al elevului cu o soluție digitală.</span>
-          <span class="hero-sub2" data-i18n="hero.sub2">Acest carnet va fi mereu cu tine, niciodată pierdut.</span>
-        </p>
-        <a href="#problema" class="cta-btn" id="cta-main" data-i18n="hero.cta">De ce?</a>
+        <a href="#problema" class="cta-btn" id="cta-main" data-i18n="hero.cta">Află mai multe!</a>
       </div>
 
-      <div class="hero-mockup-col">
-        <img src="assets/phone_mockup_romanian.png" alt="eCarnet app" class="hero-phone-mockup">
+      <!-- Description column — east of the centred phone. Two separate
+           paragraphs, deliberately spaced apart rather than one block of copy.
+           .hero-sub2 is still dropped on mobile. -->
+      <div class="hero-desc">
+        <p class="hero-subtitle" data-i18n="hero.sub1">eCarnet este aplicația menită să ajute elevii și să digitalizeze actualul carnet al elevului.</p>
+        <p class="hero-subtitle hero-sub2" data-i18n="hero.sub2">Rezolvă problemele carnetului fizic și oferă beneficii noi, într-un mod eficient și accesibil.</p>
       </div>
 
     </div>
 
-    <div class="scroll-indicator" aria-hidden="true">
-      <div class="scroll-mouse">
-        <div class="scroll-wheel"></div>
-      </div>
+    <!-- Centred 3D stage. Sits under .hero (not .hero-inner) so it spans the full
+         100vh section — inside .hero-inner it only got the text's height and the
+         phone came out half-size. three.js frames the phone dead-centre; the text
+         column floats over its left. The poster is the fallback for mobile,
+         reduced-motion and no-WebGL, and keeps .hero-phone-mockup so i18n still
+         swaps it per language. -->
+    <div class="hero-stage" id="hero-stage" aria-hidden="true">
+      <canvas id="hero-canvas" class="hero-canvas"></canvas>
+      <img src="assets/phone_mockup_romanian.png" alt="" class="hero-phone-mockup hero-phone-poster">
     </div>
 
   </section>
@@ -134,7 +165,8 @@
   <section id="problema" class="problem-section">
     <div class="problem-inner">
 
-      <h2 class="problem-heading animate-in" data-i18n="problem.heading">Carnetul fizic e depășit.</h2>
+      <h2 class="problem-heading animate-in" data-i18n-html="problem.heading">De ce au elevii nevoie de <span class="script-accent">eCarnet?</span></h2>
+      <p class="problem-subtitle animate-in" data-i18n="problem.subtitle">Deoarece actualul carnet are probleme grave. Iată câteva exemple:</p>
 
       <div class="problem-grid">
 
@@ -185,7 +217,11 @@
   <section id="solutia" class="solution-section">
     <div class="solution-inner">
 
-      <h2 class="solution-heading animate-in"><span data-i18n="solution.heading">Același carnet, acum digital.</span> <span class="solution-heading-extra" data-i18n="solution.featuresHeading">Iată ce îți oferă</span></h2>
+      <h2 class="solution-heading animate-in" data-i18n="solution.heading">Același carnet, doar că mereu cu tine.</h2>
+
+      <!-- Desktop-only: the same string that becomes .solution-features-heading on
+           mobile. A subtitle, so it lives outside the <h2> rather than inside it. -->
+      <p class="solution-subtitle animate-in" data-i18n="solution.featuresHeading">Acestea vor fi funcțiile principale</p>
 
       <div class="solution-layout">
 
@@ -207,7 +243,7 @@
         </div>
 
         <!-- Mobile-only: intro heading for the feature list, sits after the phone -->
-        <h3 class="solution-features-heading" data-i18n="solution.featuresHeading">Iată ce îți oferă</h3>
+        <h3 class="solution-features-heading" data-i18n="solution.featuresHeading">Acestea vor fi funcțiile principale</h3>
 
         <div class="features-col">
 
@@ -215,16 +251,54 @@
             <div class="feature-body">
               <h3 class="feature-title" data-i18n="solution.f1.title">Identitate de elev digitală</h3>
               <p class="feature-desc" data-i18n="solution.f1.desc">Arăți telefonul și gata. Funcționează oriunde ai nevoie să dovedești că ești elev sau student.</p>
+              <!-- The icon must NOT be a child of the [data-i18n] node: i18n.js sets
+                   textContent on it, which would delete the <svg> on every language
+                   switch. Hence the inner span carrying the key. pathLength="1"
+                   normalises every path to one unit so a single dash rule draws them
+                   all, whatever their real length. -->
               <div class="feature-tags">
-                <span class="tag" data-i18n="solution.f1.tag1">Transport public</span>
-                <span class="tag" data-i18n="solution.f1.tag2">Reduceri</span>
-                <span class="tag" data-i18n="solution.f1.tag3">Verificare</span>
+                <span class="tag">
+                  <!-- Drawn for ~19px, not 24px: body, one window band, two solid
+                       wheels. Hairline wheel stubs vanish at this size. -->
+                  <svg class="tag-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <rect pathLength="1" x="2.4" y="3.8" width="19.2" height="11" rx="2.8"/>
+                    <path pathLength="1" d="M2.4 9.6h19.2"/>
+                    <circle class="ico-wheel" cx="7" cy="17.6" r="2.15" fill="currentColor" stroke="none"/>
+                    <circle class="ico-wheel" cx="17" cy="17.6" r="2.15" fill="currentColor" stroke="none"/>
+                  </svg>
+                  <span data-i18n="solution.f1.tag1">Transport public</span>
+                </span>
+                <span class="tag">
+                  <svg class="tag-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path pathLength="1" d="M19 5 5 19"/>
+                    <circle pathLength="1" cx="7.5" cy="7.5" r="2.5"/>
+                    <circle pathLength="1" cx="16.5" cy="16.5" r="2.5"/>
+                  </svg>
+                  <span data-i18n="solution.f1.tag2">Reduceri</span>
+                </span>
+                <span class="tag">
+                  <svg class="tag-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path pathLength="1" d="M12 3 5 6v5c0 4.4 3 8.5 7 10 4-1.5 7-5.6 7-10V6l-7-3Z"/>
+                    <path pathLength="1" d="m9 12 2 2 4-4"/>
+                  </svg>
+                  <span data-i18n="solution.f1.tag3">Verificare</span>
+                </span>
               </div>
             </div>
+            <!-- stroke=currentColor, not #111: the icons ride .feature-icon's colour
+                 transition on card hover. Each icon animates on `.feature-card:hover`;
+                 the person is shifted west to clear the chat bubble that pops in. -->
             <div class="feature-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="8" r="4" stroke="#111" stroke-width="1.5"/>
-                <path d="M4 20c0-3.31 3.58-6 8-6s8 2.69 8 6" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+              <svg class="icon-account" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <circle cx="10" cy="9" r="3.6" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3.5 20c0-3.1 2.9-5.6 6.5-5.6s6.5 2.5 6.5 5.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <g class="ico-bubble">
+                  <path d="M16.2 2.2h5.6a1.6 1.6 0 0 1 1.6 1.6v3.4a1.6 1.6 0 0 1-1.6 1.6h-2.4l-2.6 2.3V8.8h-0.6a1.6 1.6 0 0 1-1.6-1.6V3.8a1.6 1.6 0 0 1 1.6-1.6Z"
+                        stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                  <circle class="ico-dot" cx="17.6" cy="5.5" r="0.62" fill="currentColor"/>
+                  <circle class="ico-dot" cx="19.6" cy="5.5" r="0.62" fill="currentColor"/>
+                  <circle class="ico-dot" cx="21.6" cy="5.5" r="0.62" fill="currentColor"/>
+                </g>
               </svg>
             </div>
           </div>
@@ -235,9 +309,23 @@
               <p class="feature-desc" data-i18n="solution.f2.desc">eCatalog va fi integrat în eCarnet cu toate notele, mediile și absențele.</p>
             </div>
             <div class="feature-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" stroke="#111" stroke-width="1.5"/>
-                <path d="M12 6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2h-6a2 2 0 01-2-2V6z" stroke="#111" stroke-width="1.5"/>
+              <svg class="icon-book" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <!-- Each half is a group: cover + its text lines, so the lines
+                     foreshorten with the page instead of floating over the fold.
+                     Both scale toward the spine at x=12. -->
+                <g class="ico-half">
+                  <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" stroke="currentColor" stroke-width="1.5"/>
+                  <g class="ico-lines">
+                    <path d="M4.6 8.4h4.8M4.6 11.2h4.8M4.6 14h3.2" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+                  </g>
+                </g>
+                <g class="ico-half">
+                  <path d="M12 6a2 2 0 012-2h6a2 2 0 012 2v12a2 2 0 01-2 2h-6a2 2 0 01-2-2V6z" stroke="currentColor" stroke-width="1.5"/>
+                  <g class="ico-lines">
+                    <path d="M14.6 8.4h4.8M14.6 11.2h4.8M14.6 14h3.2" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+                  </g>
+                </g>
+                <path class="ico-spine" d="M12 5.2v13.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </div>
           </div>
@@ -248,9 +336,15 @@
               <p class="feature-desc" data-i18n="solution.f3.desc">Orarul lecțiilor, temele pe acasă, notițe personale. Vei putea să scrii totul în aplicație.</p>
             </div>
             <div class="feature-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" stroke="#111" stroke-width="1.5"/>
-                <path d="M3 9h18M8 2v4M16 2v4" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+              <svg class="icon-calendar" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3 9h18M8 2v4M16 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <rect class="ico-date" style="--i:0" x="5.6"  y="12"   width="2.6" height="2.2" rx="0.6" fill="currentColor"/>
+                <rect class="ico-date" style="--i:1" x="10.7" y="12"   width="2.6" height="2.2" rx="0.6" fill="currentColor"/>
+                <rect class="ico-date" style="--i:2" x="15.8" y="12"   width="2.6" height="2.2" rx="0.6" fill="currentColor"/>
+                <rect class="ico-date" style="--i:3" x="5.6"  y="16.4" width="2.6" height="2.2" rx="0.6" fill="currentColor"/>
+                <rect class="ico-date" style="--i:4" x="10.7" y="16.4" width="2.6" height="2.2" rx="0.6" fill="currentColor"/>
+                <rect class="ico-date" style="--i:5" x="15.8" y="16.4" width="2.6" height="2.2" rx="0.6" fill="currentColor"/>
               </svg>
             </div>
           </div>
@@ -279,15 +373,6 @@
         <div class="tl-track">
           <div class="tl-track-line"></div>
           <div class="tl-track-accent"></div>
-        </div>
-
-        <!-- Faded continuation past the last pill → "more may follow" -->
-        <div class="tl-track-tail">
-          <span class="tl-tail-line" aria-hidden="true"></span>
-          <span class="tl-tail-mark">
-            <span class="tl-tail-glyph" aria-hidden="true">?</span>
-            <span class="tl-tail-soon" data-i18n="progress.tail.soon">În curând...</span>
-          </span>
         </div>
 
         <div class="tl-stops">
@@ -522,17 +607,30 @@
     </div>
   </div>
 
-  <!-- Hero load gate: hold the skeleton until fonts + the hero image are ready,
-       so the font swap happens behind it. Falls back after 3s no matter what. -->
+  <!-- Hero load gate: hold the skeleton until fonts + the hero image + the 3D
+       model are ready, so the font swap happens behind it AND the phone's
+       entrance animation plays in full view instead of behind the skeleton.
+       Falls back after 3s no matter what. -->
   <script>
     (function () {
       var body = document.body;
       function fontsReady() { body.classList.add("fonts-ready"); }
 
       var revealed = false;
-      function reveal() { if (revealed) return; revealed = true; body.classList.add("is-loaded"); }
+      function reveal() {
+        if (revealed) return;
+        revealed = true;
+        body.classList.add("is-loaded");
+        // hero3d.js waits on this to start its entrance.
+        document.dispatchEvent(new Event("hero:reveal"));
+      }
 
       var waits = [];
+
+      // hero3d.js settles this once the model is in the scene — or immediately,
+      // on the paths where it bails to the poster (mobile, reduced-motion, no
+      // WebGL, load failure). If the module never runs at all, the 3s net covers us.
+      waits.push(new Promise(function (res) { window.__heroModelDone = res; }));
       if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(fontsReady);
         waits.push(document.fonts.ready);
@@ -553,7 +651,12 @@
     })();
   </script>
 
-  <script src="js/i18n.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/i18n.js?v=20"></script>
+  <script src="js/main.js?v=20"></script>
+
+  <!-- Deferred by nature (type=module). The hero shows its poster until the
+       model is decoded, so this never blocks first paint. -->
+  <script type="module" src="js/hero3d.js?v=20"></script>
+  <script type="module" src="js/hero-fluid.js?v=20"></script>
 </body>
 </html>

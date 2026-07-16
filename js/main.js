@@ -24,10 +24,16 @@ document.getElementById('cta-main').addEventListener('click', function (e) {
   document.getElementById('problema').scrollIntoView({ behavior: 'smooth' });
 });
 
-// Stagger delay for grouped animated elements
+// Stagger delay for grouped animated elements. The delay is only for the
+// entrance — clear it once that finishes, so hover/open transitions on the
+// same element fire immediately instead of inheriting the stagger.
 document.querySelectorAll('.problem-grid, .features-col, .faq-list').forEach(group => {
   group.querySelectorAll('.animate-in').forEach((el, i) => {
     el.style.transitionDelay = `${i * 0.12}s`;
+    el.addEventListener('transitionend', function clear() {
+      el.style.transitionDelay = '';
+      el.removeEventListener('transitionend', clear);
+    });
   });
 });
 
@@ -61,9 +67,7 @@ document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
 const timelineV2 = document.querySelector('.timeline-v2');
 if (timelineV2) {
   new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      timelineV2.classList.add('is-visible');
-    }
+    if (entry.isIntersecting) timelineV2.classList.add('is-visible');
   }, { threshold: 0.3 }).observe(timelineV2);
 }
 
@@ -218,12 +222,6 @@ if (navbar) {
   updateBrand();
 }
 
-// Hide scroll indicator on first scroll
-window.addEventListener('scroll', function hideScroll() {
-  document.querySelector('.scroll-indicator')?.classList.add('hidden');
-  window.removeEventListener('scroll', hideScroll);
-});
-
 // Solution icon: drag the icon; the ring trails after it magnetically.
 // The icon tracks the pointer immediately on its own layer (.icon-magnet) and
 // springs home on release. The ring (.ring-magnet) eases toward the icon's
@@ -302,6 +300,67 @@ initMagneticOrbit(
   document.querySelector('.hero-orbit-mobile .ring-magnet'),
   document.querySelector('.hero-orbit-icon')
 );
+
+// ============================================
+// Mobile: problem cards breathe with scroll — each card eases toward full size
+// as its center nears the viewport's center and shrinks toward the edges.
+// The entrance animation (.animate-in → .visible) also drives transform, so a
+// card is left alone until its entrance has finished (visible + grace period);
+// after that the scroll effect owns the transform, transition disabled so the
+// per-frame writes track the finger 1:1.
+// ============================================
+(function () {
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.problem-card'));
+  if (!cards.length) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var mq = window.matchMedia('(max-width: 768px)');
+  var MIN_SCALE = 0.93;
+  var ticking = false;
+
+  function apply() {
+    ticking = false;
+    if (!mq.matches) return;
+    var mid = window.innerHeight / 2;
+    cards.forEach(function (card) {
+      if (!card.__settled) {
+        // Entrance still owns the transform. Longest case: 0.36s stagger
+        // delay + 0.6s transition — 1s covers it.
+        if (card.classList.contains('visible') && !card.__settleTimer) {
+          card.__settleTimer = setTimeout(function () {
+            card.__settled = true;
+            requestScale();
+          }, 1000);
+        }
+        return;
+      }
+      card.style.transition = 'none';
+      var r = card.getBoundingClientRect();
+      var d = Math.abs(r.top + r.height / 2 - mid) / mid;   // 0 at center → 1 at edge
+      var s = 1 - Math.min(1, d) * (1 - MIN_SCALE);
+      card.style.transform = 'scale(' + s.toFixed(4) + ')';
+    });
+  }
+
+  function requestScale() {
+    if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+  }
+
+  function reset() {
+    cards.forEach(function (card) {
+      card.style.transform = '';
+      card.style.transition = '';
+    });
+  }
+
+  var mqHandler = function () { mq.matches ? requestScale() : reset(); };
+  if (mq.addEventListener) mq.addEventListener('change', mqHandler);
+  else mq.addListener(mqHandler);
+
+  window.addEventListener('scroll', requestScale, { passive: true });
+  onResize(requestScale);
+  requestScale();
+})();
 
 // Problem cards: cursor spotlight. Feed the pointer position into CSS vars so
 // the ::before glow tracks the mouse. rAF-throttled to one write per frame.
